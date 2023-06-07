@@ -7,12 +7,16 @@ import InterfaceLink.ChangeDirection;
 import InterfaceLink.RefreshListner;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static java.lang.Thread.sleep;
 
 
 public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
     private final int[][] gameBoard;
+    private Queue<Direction> snakeDirections = new LinkedList<>();
+    private int maxSnakeLength = 5; // Maksymalna długość węża, po przekroczeniu której będzie skracany
     private static final int ROWS = 25;
     private static final int COLS = 16;
     private int deltaX = 0;
@@ -68,10 +72,29 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
         while (gameOngoing) {
             snakeX += deltaX;
             snakeY += deltaY;
-            gameBoard[snakeY][snakeX] = 1;
-            System.out.println("Snake is on position: " + snakeX + " " + snakeY);
+            if (gameBoard[snakeY][snakeX] == 2) {
+                snakeLenght++;
+                snakeDirections.offer(DIRECTION);
+                gameBoard[snakeY][snakeX] = 1;
+
+                if (snakeLenght > maxSnakeLength) {
+                    Direction removedDirection = snakeDirections.poll();
+                    int removedSegmentX = snakeX - (removedDirection == Direction.RIGHT ? maxSnakeLength : 0);
+                    int removedSegmentY = snakeY - (removedDirection == Direction.DOWN ? maxSnakeLength : 0);
+                    gameBoard[removedSegmentY][removedSegmentX] = 0;
+                }
+            } else {
+                gameBoard[snakeY][snakeX] = 1;
+                gameBoard[snakeY - deltaY][snakeX - deltaX] = 0;
+            }
+
+
+
+            System.out.println(snakeLenght);
+
+            //System.out.println("Snake is on position: " + snakeX + " " + snakeY);
             try {
-               sleep(1000);
+               sleep(300);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

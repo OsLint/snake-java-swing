@@ -88,16 +88,16 @@ public class BoardVisual extends JPanel implements RefreshListner {
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             int colorValue = gameBoard[row][column];
             if (colorValue == 1) {
-                component.setBackground(Color.GREEN);
+                component.setBackground(new Color(0,100,0));
             } else if (colorValue == 2) {
                 component.setBackground(Color.RED);
                 if (isSelected) {
                     component.setForeground(Color.WHITE);
                 } else {
-                    component.setForeground(Color.BLACK);
+                    component.setForeground(Color.GREEN);
                 }
             } else {
-                component.setBackground(Color.BLACK);
+                component.setBackground(Color.GREEN);
             }
             return component;
         }
