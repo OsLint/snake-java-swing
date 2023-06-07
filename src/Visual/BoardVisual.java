@@ -19,6 +19,8 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private int [] [] gameBoard;
     private int cellSize = 20;
 
+
+
     public BoardVisual(BoardLink boardLink) {
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         this.boardLink = boardLink;

@@ -7,23 +7,27 @@ import InterfaceLink.ChangeDirection;
 import InterfaceLink.RefreshListner;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static java.lang.Thread.sleep;
 
 
 public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
     private final int[][] gameBoard;
-    private Queue<Direction> snakeDirections = new LinkedList<>();
-    private int maxSnakeLength = 5; // Maksymalna długość węża, po przekroczeniu której będzie skracany
     private static final int ROWS = 25;
     private static final int COLS = 16;
     private int deltaX = 0;
     private int deltaY = 0;
     private int snakeX = 10;
     private int snakeY = 10;
-
+    Map<Integer, int[]> segmentsMap = new LinkedHashMap<Integer, int[]>(5, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, int[]> eldest) {
+            return size() > 5;
+        }
+    };
     private int snakeLenght = 2;
     private int playerScore = 0;
     private boolean gameOngoing;
@@ -39,6 +43,8 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
         // Tworzenie i uruchamianie wątku odświerzającego
         Thread refreshThread = new Thread(this::refreshThreadLoop);
         refreshThread.start();
+
+
 
     }
 
@@ -66,28 +72,22 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
         gameBoard[11][11]= 2;
     }
 
+    @Override
+    public Map<Integer, int[]> getSegmentsMap() {
+        return segmentsMap;
+    }
 
     @Override
     public void run() {
         while (gameOngoing) {
             snakeX += deltaX;
             snakeY += deltaY;
-            if (gameBoard[snakeY][snakeX] == 2) {
+            if(gameBoard[snakeY][snakeX] == 2) {
                 snakeLenght++;
-                snakeDirections.offer(DIRECTION);
-                gameBoard[snakeY][snakeX] = 1;
-
-                if (snakeLenght > maxSnakeLength) {
-                    Direction removedDirection = snakeDirections.poll();
-                    int removedSegmentX = snakeX - (removedDirection == Direction.RIGHT ? maxSnakeLength : 0);
-                    int removedSegmentY = snakeY - (removedDirection == Direction.DOWN ? maxSnakeLength : 0);
-                    gameBoard[removedSegmentY][removedSegmentX] = 0;
-                }
-            } else {
-                gameBoard[snakeY][snakeX] = 1;
-                gameBoard[snakeY - deltaY][snakeX - deltaX] = 0;
             }
-
+            gameBoard[snakeY][snakeX] = 1;
+            segmentsMap.put(1,new int[]{snakeX,snakeY});
+            //gameBoard[snakeY-deltaY][snakeX-deltaX] = 0;
 
 
             System.out.println(snakeLenght);
@@ -134,6 +134,17 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
             }
         }
         System.out.println("Direction is: " + DIRECTION.toString());
+    }
+
+    private boolean isRecentSegment(int row, int col) {
+        for (int[] segment : segmentsMap.values()) {
+            int segmentRow = segment[1];
+            int segmentCol = segment[0];
+            if (segmentRow == row && segmentCol == col) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
