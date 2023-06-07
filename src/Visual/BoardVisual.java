@@ -19,6 +19,8 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private int [] [] gameBoard;
     private int cellSize = 20;
 
+    ImageIcon snakeHeadIcon = new ImageIcon("snakeheadtest.png");
+
 
 
     public BoardVisual(BoardLink boardLink) {
@@ -59,10 +61,13 @@ public class BoardVisual extends JPanel implements RefreshListner {
     @Override
     public void refresh(RefreshEvent evt) {
         this.gameBoard = boardLink.getGameBoard();
+        playerScore.setText("Score: " +
+                boardLink.getPLayerScore());
         this.repaintTable();
     }
 
     private class CustomCellRenderer extends DefaultTableCellRenderer {
+        int colorValue;
         @Override
         public void setValue(Object value) {
             // Do nothing to hide the value
@@ -73,23 +78,19 @@ public class BoardVisual extends JPanel implements RefreshListner {
             super.paintComponent(g);
 
             setBackground(Color.BLACK);
-
-            if (getBackground().equals(Color.RED)) {
-                g.setColor(Color.RED);
-                int ovalWidth = Math.min(getWidth(), getHeight()) - 4;
-                int ovalHeight = ovalWidth;
-                int ovalX = (getWidth() - ovalWidth) / 2;
-                int ovalY = (getHeight() - ovalHeight) / 2;
-                g.fillOval(ovalX, ovalY, ovalWidth, ovalHeight);
+            if(colorValue == 1){
+                g.drawImage(snakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
             }
+
         }
         @Override
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
         ) {
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            int colorValue = gameBoard[row][column];
+            colorValue = gameBoard[row][column];
             if (colorValue == 1) {
+                //setIcon(snakeHeadIcon);
                 component.setBackground(new Color(0,100,0));
             } else if (colorValue == 2) {
                 component.setBackground(Color.RED);

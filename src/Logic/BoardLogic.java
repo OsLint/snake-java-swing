@@ -20,16 +20,18 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
     private static final int COLS = 16;
     private int deltaX = 0;
     private int deltaY = 0;
-    private int snakeX = 10;
-    private int snakeY = 10;
+    private int snakeX = 8;
+    private int snakeY = 12;
     private static int mapIndex = 0;
+
+    private int snakeLenght = 2;
     Map<Integer, int[]> segmentsMap = new LinkedHashMap<Integer, int[]>(2, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<Integer, int[]> eldest) {
-            return size() >= snakeLenght;
+            return size() == snakeLenght;
         }
     };
-    private int snakeLenght = 2;
+
     private int playerScore = 0;
     private boolean gameOngoing;
     public  Direction DIRECTION;
@@ -59,6 +61,8 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
             }
         }
 
+
+
         gameBoard[7][8]= 2;
         gameBoard[2][9]= 2;
         gameBoard[5][10]= 2;
@@ -71,6 +75,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
         gameBoard[12][9]= 2;
         gameBoard[16][10]= 2;
         gameBoard[11][11]= 2;
+
     }
 
     @Override
@@ -83,6 +88,11 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
         while (gameOngoing) {
             snakeX += deltaX;
             snakeY += deltaY;
+
+            //if(gameBoard[snakeY+deltaY][snakeX+deltaX] == 1){
+                //throw new ArrayIndexOutOfBoundsException();
+            //}
+
             if(gameBoard[snakeY][snakeX] == 2) {
                 snakeLenght++;
                 playerScore++;
@@ -90,6 +100,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
             gameBoard[snakeY][snakeX] = 1;
             segmentsMap.put(mapIndex,new int[]{snakeX,snakeY});
             mapIndex++;
+
             for (int row = 0; row < ROWS; row++) {
                 for (int col = 0; col < COLS; col++) {
                     if(!(gameBoard[row][col] == 2)){
