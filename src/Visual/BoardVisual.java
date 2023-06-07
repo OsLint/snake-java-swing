@@ -108,7 +108,12 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private void repaintTable() {
         for (int row = 0; row < boardLink.getRows(); row++) {
             for (int col = 0; col < boardLink.getCols(); col++) {
-                model.setValueAt(gameBoard[row][col], row, col);
+                int segmentValue = gameBoard[row][col];
+                if (segmentValue == 1 && !boardLink.isRecentSegment(row, col)) {
+                    segmentValue = 0; // Make segments older than 5 not visible
+                }
+                model.setValueAt(segmentValue, row, col);
+
             }
         }
         revalidate();

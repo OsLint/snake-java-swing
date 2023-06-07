@@ -22,10 +22,11 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
     private int deltaY = 0;
     private int snakeX = 10;
     private int snakeY = 10;
-    Map<Integer, int[]> segmentsMap = new LinkedHashMap<Integer, int[]>(5, 0.75f, true) {
+    private static int mapIndex = 0;
+    Map<Integer, int[]> segmentsMap = new LinkedHashMap<Integer, int[]>(2, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<Integer, int[]> eldest) {
-            return size() > 5;
+            return size() >= snakeLenght;
         }
     };
     private int snakeLenght = 2;
@@ -84,9 +85,19 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
             snakeY += deltaY;
             if(gameBoard[snakeY][snakeX] == 2) {
                 snakeLenght++;
+                playerScore++;
             }
             gameBoard[snakeY][snakeX] = 1;
-            segmentsMap.put(1,new int[]{snakeX,snakeY});
+            segmentsMap.put(mapIndex,new int[]{snakeX,snakeY});
+            mapIndex++;
+            for (int row = 0; row < ROWS; row++) {
+                for (int col = 0; col < COLS; col++) {
+                    if(!(gameBoard[row][col] == 2)){
+                        if(!isRecentSegment(row,col))
+                            gameBoard[row][col] = 0;
+                    }
+                }
+            }
             //gameBoard[snakeY-deltaY][snakeX-deltaX] = 0;
 
 
@@ -135,8 +146,8 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirection {
         }
         System.out.println("Direction is: " + DIRECTION.toString());
     }
-
-    private boolean isRecentSegment(int row, int col) {
+    @Override
+    public boolean isRecentSegment(int row, int col) {
         for (int[] segment : segmentsMap.values()) {
             int segmentRow = segment[1];
             int segmentCol = segment[0];

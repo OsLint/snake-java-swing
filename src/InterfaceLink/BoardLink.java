@@ -9,4 +9,5 @@ public interface BoardLink {
     void initializeGameBoard();
     int getPLayerScore();
     Map<Integer, int[]> getSegmentsMap();
+    boolean isRecentSegment(int row, int col);
 }
