@@ -56,7 +56,7 @@ public class PlayerInput implements KeyListener, Runnable {
     }
     private void fireChangeDirection(ChangeDirectionEvent event) {
         for (ChangeDirectionListner listener : directionListners) {
-            listener.setDirection(event.getDirection());
+            listener.setDirection(event);
         }
     }
     public void addChangeDirectionListner (ChangeDirectionListner listner) {

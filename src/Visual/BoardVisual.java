@@ -23,6 +23,9 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private final ImageIcon snakeBodyIcon;
     private final ImageIcon grassIcon;
     private final ImageIcon appleIcon;
+    private final ImageIcon goldAppleIcon;
+    private final ImageIcon blackAppleIcon;
+    private final ImageIcon scissorsIcon;
 
     public BoardVisual(BoardLink boardLink) {
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
@@ -33,6 +36,9 @@ public class BoardVisual extends JPanel implements RefreshListner {
         String snakeBodyImagePath ="snakeBody.png";
         String grassImagePath = "grass20x20.png";
         String appleImagePath = "apple20x20.png";
+        String goldAppleImagePath ="goldapple20x20.png";
+        String blackAppleImagePath= "blackapple20x20.png";
+        String scissorsImagePath = "scissors20x20.png";
         northSnakeHeadIcon = new ImageIcon(northSnakeHeadImagePath);
         southSnakeHeadIcon = new ImageIcon(southSnakeHeadImagePath);
         westSnakeHeadIcon = new ImageIcon(westSnakeHeadImagePath);
@@ -40,6 +46,9 @@ public class BoardVisual extends JPanel implements RefreshListner {
         snakeBodyIcon = new ImageIcon(snakeBodyImagePath);
         grassIcon = new ImageIcon(grassImagePath);
         appleIcon = new ImageIcon(appleImagePath);
+        goldAppleIcon = new ImageIcon(goldAppleImagePath);
+        blackAppleIcon = new ImageIcon(blackAppleImagePath);
+        scissorsIcon = new ImageIcon(scissorsImagePath);
         this.boardLink = boardLink;
         gameBoard = boardLink.getGameBoard();
         model = new DefaultTableModel(boardLink.getRows(),boardLink.getCols());
@@ -99,10 +108,6 @@ public class BoardVisual extends JPanel implements RefreshListner {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            setBackground(Color.BLACK);
-
-
-
             switch (colorValue){
                 case 0 -> g.drawImage(grassIcon.getImage(),0,0,getWidth(),getHeight(),null);
                 case 1 ->  {
@@ -124,6 +129,9 @@ public class BoardVisual extends JPanel implements RefreshListner {
                 }
                 case 2 -> g.drawImage(snakeBodyIcon.getImage(),0,0,getWidth(),getHeight(),null);
                 case 3 -> g.drawImage(appleIcon.getImage(),0,0,getWidth(),getHeight(),null);
+                case 4 -> g.drawImage(goldAppleIcon.getImage(),0,0,getWidth(),getHeight(),null);
+                case 5 -> g.drawImage(scissorsIcon.getImage(),0,0,getWidth(),getHeight(),null);
+                case 6 -> g.drawImage(blackAppleIcon.getImage(),0,0,getWidth(),getHeight(),null);
             }
         }
         @Override
@@ -133,10 +141,13 @@ public class BoardVisual extends JPanel implements RefreshListner {
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             colorValue = gameBoard[row][column];
             switch (colorValue){
-                case 0 -> component.setBackground(Color.BLACK);
+                case 0 -> component.setBackground(Color.MAGENTA);
                 case 1 -> component.setBackground(Color.ORANGE);
                 case 2 -> component.setBackground(Color.GREEN);
                 case 3 -> component.setBackground(Color.RED);
+                case 4 -> component.setBackground(Color.YELLOW);
+                case 5 -> component.setBackground(Color.BLUE);
+                case 6 -> component.setBackground(Color.BLACK);
             }
             return component;
         }

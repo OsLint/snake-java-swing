@@ -1,21 +1,19 @@
 package Logic;
 
+import Events.ChangeDirectionEvent;
 import Events.FoodEatenEvent;
+import Events.GameOverEvent;
 import Events.RefreshEvent;
-import InterfaceLink.BoardLink;
-import InterfaceLink.ChangeDirectionListner;
-import InterfaceLink.FoodEventListner;
-import InterfaceLink.RefreshListner;
+import InterfaceLink.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static java.lang.Math.round;
 
 
-public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, FoodEventListner {
+public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, FoodEventListner, GameOverListner {
     private final int[][] gameBoard;
     private static final int ROWS = 25;
     private static final int COLS = 16;
@@ -32,6 +30,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     private final Map<Integer, int[]> segmentsMap;
     private final ArrayList<RefreshListner> refreshListners = new ArrayList<>();
     private final ArrayList<FoodEventListner> foodEventListners = new ArrayList<>();
+    private final ArrayList<GameOverListner> gameOverListners = new ArrayList<>();
 
     public BoardLogic() {
         //Inicjalizacja pól prywatnych
@@ -78,18 +77,22 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
                 int cellValue = gameBoard[snakeY][snakeX];
             if(cellValue == 3) {
                 FoodEatenEvent foodEatenEvent = new FoodEatenEvent(this, FoodType.APPLE);
-                notifyFoodEventListners(foodEatenEvent);
+                fireFoodEvent(foodEatenEvent);
             }  //Sprawdzamy, czy w tym ruchu snake zjadł złote jabłko
             else if (cellValue == 4) {
                 FoodEatenEvent foodEatenEvent = new FoodEatenEvent(this, FoodType.GOLDENAPPLE);
-                notifyFoodEventListners(foodEatenEvent);
+                fireFoodEvent(foodEatenEvent);
             } else if(cellValue == 5){
                 FoodEatenEvent foodEatenEvent = new FoodEatenEvent(this, FoodType.SCISSORS);
-                notifyFoodEventListners(foodEatenEvent);
-            } //Sprawdzamy, czy w tym ruchu snake zjadł swój ogon
+                fireFoodEvent(foodEatenEvent);
+            } else if (cellValue == 6) {
+                FoodEatenEvent foodEatenEvent = new FoodEatenEvent(this, FoodType.BLACKAPPLE);
+                fireFoodEvent(foodEatenEvent);
+            }  //Sprawdzamy, czy w tym ruchu snake zjadł swój ogon
             else if(snakeLenght >= 2 && cellValue == 2) {
                 System.out.println("Sam się zjadłeś koleś");
-                gameOngoing = false;
+                fireGameOver(new GameOverEvent(this));
+                //gameOngoing = false;
             }
             }catch (ArrayIndexOutOfBoundsException ignored) {
                 //Ignorujemy wyjątek
@@ -99,8 +102,9 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
             try{
                 gameBoard[snakeY][snakeX] = 1;
             }catch (ArrayIndexOutOfBoundsException e){
-                System.out.println("koniec gry");
-                gameOngoing = false;
+                //System.out.println("koniec gry");
+                fireGameOver(new GameOverEvent(this));
+               // gameOngoing = false;
             }
 
             //Dodajemy nowy segment do mapy segmentów
@@ -108,14 +112,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
             MAPINDEX++;
 
             //Usuwanie segmentów niebędących częścią mapy
-            for (int row = 0; row < ROWS; row++) {
-                for (int col = 0; col < COLS; col++) {
-                    if(!(gameBoard[row][col] == 3)){
-                        if(!isRecentSegment(row,col))
-                            gameBoard[row][col] = 0;
-                    }
-                }
-            }
+            cleanNonRecentSegments();
 
             //Oczekiwanie na wykonanie następnego ruchu
             try {
@@ -136,8 +133,19 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
             int minWaitTime = 1;
             int waitTime = Math.max(minWaitTime, baseWaitTime / snakeLenght);
             //Zabezpieczenie by jedzenie nie pojawiło się w wężu
-            if(!isRecentSegment(foodRow,foodCol)){
-                gameBoard[foodRow][foodCol] = 3;
+            if(gameBoard[foodRow][foodCol] == 0){
+                double randomValue = random.nextDouble();
+
+                if (randomValue < 0.01) {
+                    gameBoard[foodRow][foodCol] = 5; // 1% szansy na pojawienie się nożyc
+                }else if (randomValue < 0.06) {
+                    gameBoard[foodRow][foodCol] = 6;
+                }else if (randomValue < 0.11) {
+                    gameBoard[foodRow][foodCol] = 4; // 10% szansy na pojawienie się złotego jabłka
+                } else {
+                    gameBoard[foodRow][foodCol] = 3; // 89% szansy na pojawienie się zwykłego jabłka
+                }
+
             }
             try {
                 synchronized (this) {
@@ -157,8 +165,8 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
         }
     }
     @Override
-    public void setDirection(Direction direction) {
-        this.DIRECTION = direction;
+    public void setDirection(ChangeDirectionEvent changeDirectionEvent) {
+        this.DIRECTION = changeDirectionEvent.getDirection();
         switch (DIRECTION) {
             case UP -> {
                 deltaY = -1;
@@ -178,6 +186,18 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
             }
         }
     }
+    public void cleanNonRecentSegments(){
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                int cellValue  = gameBoard[row][col];
+                if(cellValue == 2){
+                    if(!isRecentSegment(row,col))
+                        gameBoard[row][col] = 0;
+                }
+            }
+        }
+    }
+
     @Override
     public boolean isRecentSegment(int row, int col) {
         for (int[] segment : segmentsMap.values()) {
@@ -195,26 +215,33 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
         return gameOngoing;
     }
     @Override
-    public void consoooomeFood(FoodType foodType) {
-        switch (foodType){
+    public void consoooomeFood(FoodEatenEvent foodEatenEvent) {
+        switch (foodEatenEvent.getFoodType()){
             case APPLE -> {
                 playerScore +=10;
                 snakeLenght++;
             }
             case SCISSORS -> {
-                if(snakeLenght >2){
-                    snakeLenght = round(((float)snakeLenght/2));
+                if(snakeLenght > 2){
+                        segmentsMap.clear();
+                        snakeLenght = 1;
                 }
             }
             case GOLDENAPPLE -> {
                 playerScore +=100;
                 snakeLenght++;
             }
+            case BLACKAPPLE -> fireGameOver(new GameOverEvent(this));
         }
     }
-    private void notifyFoodEventListners(FoodEatenEvent foodEatenEvent) {
+    private void fireFoodEvent(FoodEatenEvent foodEatenEvent) {
         for (FoodEventListner listener : foodEventListners) {
-            listener.consoooomeFood(foodEatenEvent.getFoodType());
+            listener.consoooomeFood(foodEatenEvent);
+        }
+    }
+    private void fireGameOver(GameOverEvent gameOverEvent){
+        for (GameOverListner listener : gameOverListners) {
+            listener.endGame(gameOverEvent);
         }
     }
 
@@ -241,6 +268,9 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     public void addFoodEventListner(FoodEventListner listner){
         this.foodEventListners.add(listner);
     }
+    public void addGameOverListner(GameOverListner listner){
+        this.gameOverListners.add(listner);
+    }
     @Override
     public Direction getCurrentDirection() {
         return DIRECTION;
@@ -265,6 +295,9 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     public String getPlayerName() {
         return playerName;
     }
-
-
+    @Override
+    public void endGame(GameOverEvent gameOverEvent) {
+        System.out.println("Koniec gry ");
+        gameOngoing = false;
+    }
 }

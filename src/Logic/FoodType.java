@@ -1,5 +1,5 @@
 package Logic;
 
 public enum FoodType {
-    APPLE,GOLDENAPPLE, SCISSORS
+    APPLE,GOLDENAPPLE,BLACKAPPLE, SCISSORS
 }

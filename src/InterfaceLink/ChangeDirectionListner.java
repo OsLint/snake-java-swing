@@ -1,7 +1,8 @@
 package InterfaceLink;
 
+import Events.ChangeDirectionEvent;
 import Logic.Direction;
 
 public interface ChangeDirectionListner {
-    void setDirection(Direction direction);
+    void setDirection(ChangeDirectionEvent changeDirectionEvent);
 }

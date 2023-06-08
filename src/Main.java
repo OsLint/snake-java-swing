@@ -34,6 +34,7 @@ class Main extends JFrame  {
         addKeyListener(playerInput);
         boardLogic.addRefreshListner(boardVisual);
         boardLogic.addFoodEventListner(boardLogic);
+        boardLogic.addGameOverListner(boardLogic);
         playerInput.addChangeDirectionListner(boardLogic);
         getContentPane().add(boardVisual);
     }
