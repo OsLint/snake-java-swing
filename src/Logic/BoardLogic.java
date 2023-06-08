@@ -61,6 +61,7 @@ public class BoardLogic implements BoardLink, Runnable {
     @Override
     public void run() {
         while (gameOngoing) {
+            gameBoard[snakeY][snakeX] = 2;
             snakeX += deltaX;
             snakeY += deltaY;
             if(gameBoard[snakeY][snakeX] == 3) {
