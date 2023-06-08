@@ -1,6 +1,6 @@
 package InterfaceLink;
 
-import java.util.Map;
+import Logic.Direction;
 
 public interface BoardLink {
     int [] [] getGameBoard();
@@ -8,6 +8,7 @@ public interface BoardLink {
     int getCols();
     void initializeGameBoard();
     int getPLayerScore();
-    Map<Integer, int[]> getSegmentsMap();
     boolean isRecentSegment(int row, int col);
+    Direction getCurrentDirection();
+    void setDirection(Direction direction);
 }

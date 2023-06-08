@@ -14,17 +14,11 @@ class Main extends JFrame  {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
         setLocationRelativeTo(null);
-
         BoardLogic boardLogic = new BoardLogic();
         BoardVisual boardVisual = new BoardVisual(boardLogic);
-        PlayerInput playerInput = new PlayerInput();
+        PlayerInput playerInput = new PlayerInput(boardLogic);
         addKeyListener(playerInput);
-        playerInput.addChangeDirectionListner(boardLogic);
         boardLogic.addRefreshListner(boardVisual);
-
-
-
-
         getContentPane().add(boardVisual);
     }
 

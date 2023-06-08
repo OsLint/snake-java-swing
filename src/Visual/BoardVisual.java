@@ -17,10 +17,10 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private JTable table;
     private DefaultTableModel model;
     private int [] [] gameBoard;
-    private int cellSize = 20;
 
     ImageIcon snakeHeadIcon = new ImageIcon("snakeheadtest.png");
     ImageIcon grassIcon = new ImageIcon("pixelartgrass.png");
+    ImageIcon appleIcon = new ImageIcon("apple1.png");
 
 
 
@@ -32,6 +32,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
                boardLink.getPLayerScore());
         model = new DefaultTableModel(boardLink.getRows(),boardLink.getCols());
         table = new JTable(model);
+        int cellSize = 20;
         table.setRowHeight(cellSize);
         table.setTableHeader(null);
         // Set column widths
@@ -77,14 +78,13 @@ public class BoardVisual extends JPanel implements RefreshListner {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-
             setBackground(Color.BLACK);
-            if(colorValue == 1){
-                g.drawImage(snakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
-            }else if (colorValue == 0)  {
-                g.drawImage(grassIcon.getImage(),0,0,getWidth(),getHeight(),null);
+            switch (colorValue){
+                case 0 -> g.drawImage(grassIcon.getImage(),0,0,getWidth(),getHeight(),null);
+                case 1 ->  g.drawImage(snakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+                case 2 -> System.out.println("bug");
+                case 3 -> g.drawImage(appleIcon.getImage(),0,0,getWidth(),getHeight(),null);
             }
-
         }
         @Override
         public Component getTableCellRendererComponent(
@@ -92,19 +92,13 @@ public class BoardVisual extends JPanel implements RefreshListner {
         ) {
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             colorValue = gameBoard[row][column];
-            if (colorValue == 1) {
-                //setIcon(snakeHeadIcon);
-                component.setBackground(new Color(0,100,0));
-            } else if (colorValue == 2) {
-                component.setBackground(Color.RED);
-                if (isSelected) {
-                    component.setForeground(Color.WHITE);
-                } else {
-                    component.setForeground(Color.GREEN);
-                }
-            } else {
-                component.setBackground(Color.GREEN);
-            }
+            component.setBackground(new Color(60,200,60));
+            /*switch (colorValue){
+                case 0 -> component.setBackground(Color.GREEN);
+                case 1 -> component.setBackground(Color.GREEN);
+                case 2 -> component.setBackground(Color.GREEN);
+                case 3 -> component.setBackground(Color.GREEN);
+            }*/
             return component;
         }
     }
@@ -113,11 +107,10 @@ public class BoardVisual extends JPanel implements RefreshListner {
         for (int row = 0; row < boardLink.getRows(); row++) {
             for (int col = 0; col < boardLink.getCols(); col++) {
                 int segmentValue = gameBoard[row][col];
-                if (segmentValue == 1 && !boardLink.isRecentSegment(row, col)) {
-                    segmentValue = 0; // Make segments older than 5 not visible
+                if (segmentValue == 2 && !boardLink.isRecentSegment(row, col)) {
+                    segmentValue = 0;
                 }
                 model.setValueAt(segmentValue, row, col);
-
             }
         }
         revalidate();
