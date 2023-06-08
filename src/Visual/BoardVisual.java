@@ -20,6 +20,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private int cellSize = 20;
 
     ImageIcon snakeHeadIcon = new ImageIcon("snakeheadtest.png");
+    ImageIcon grassIcon = new ImageIcon("pixelartgrass.png");
 
 
 
@@ -80,6 +81,8 @@ public class BoardVisual extends JPanel implements RefreshListner {
             setBackground(Color.BLACK);
             if(colorValue == 1){
                 g.drawImage(snakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+            }else if (colorValue == 0)  {
+                g.drawImage(grassIcon.getImage(),0,0,getWidth(),getHeight(),null);
             }
 
         }
