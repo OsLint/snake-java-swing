@@ -1,6 +1,7 @@
 package Visual;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -11,7 +12,7 @@ import InterfaceLink.BoardLink;
 import InterfaceLink.RefreshListner;
 
 public class BoardVisual extends JPanel implements RefreshListner {
-    private final JLabel playerScore;
+    private final JPanel playerScore;
     private final BoardLink boardLink;
     private final DefaultTableModel model;
     private int [] [] gameBoard;
@@ -24,6 +25,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private final ImageIcon appleIcon;
 
     public BoardVisual(BoardLink boardLink) {
+        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         String northSnakeHeadImagePath = "snakeHeadNorth.png";
         String westSnakeHeadImagePath = "snakeHeadWest.png";
         String eastSnakeHeadImagePath = "snakeHeadEast.png";
@@ -38,16 +40,25 @@ public class BoardVisual extends JPanel implements RefreshListner {
         snakeBodyIcon = new ImageIcon(snakeBodyImagePath);
         grassIcon = new ImageIcon(grassImagePath);
         appleIcon = new ImageIcon(appleImagePath);
-        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         this.boardLink = boardLink;
         gameBoard = boardLink.getGameBoard();
-        playerScore = new JLabel("Score: " +
-               boardLink.getPLayerScore());
         model = new DefaultTableModel(boardLink.getRows(),boardLink.getCols());
-        JTable table = new JTable(model);
+        playerScore = new JPanel(){
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setColor(Color.WHITE);
+                g.setFont(new Font("Arial", Font.PLAIN, 20));
+                g.drawString("Score: " + boardLink.getPLayerScore(), (this.getWidth()/2)-50, 21);
+            }
+        };
         int cellSize = 20;
+        JTable table = new JTable(model);
+        Border tableBorder = BorderFactory.createDashedBorder(Color.BLACK, 5, 2, 2, false);
+        table.setBorder(tableBorder);
         table.setRowHeight(cellSize);
         table.setTableHeader(null);
+        table.setBorder(tableBorder);
         // Set column widths
         for (int i = 0; i < boardLink.getCols(); i++) {
             TableColumn column = table.getColumnModel().getColumn(i);
@@ -61,12 +72,10 @@ public class BoardVisual extends JPanel implements RefreshListner {
         table.setFocusable(false);
         table.setDefaultRenderer(Object.class, new CustomCellRenderer());
 
-        setBackground(Color.GRAY);
-
-        playerScore.setForeground(Color.WHITE);
-        playerScore.setFont(new Font("Arial",Font.PLAIN,20));
-        add(playerScore);
-        add(table);
+        playerScore.setBackground(Color.BLACK);
+        setBackground(Color.BLACK);
+        add(table,BorderLayout.CENTER);
+        add(playerScore,BorderLayout.SOUTH);
         boardLink.initializeGameBoard();
         repaintTable();
 
@@ -76,8 +85,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
     @Override
     public void refresh(RefreshEvent evt) {
         this.gameBoard = boardLink.getGameBoard();
-        playerScore.setText("Score: " +
-                boardLink.getPLayerScore());
+        playerScore.repaint();
         this.repaintTable();
     }
 
@@ -92,6 +100,9 @@ public class BoardVisual extends JPanel implements RefreshListner {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             setBackground(Color.BLACK);
+
+
+
             switch (colorValue){
                 case 0 -> g.drawImage(grassIcon.getImage(),0,0,getWidth(),getHeight(),null);
                 case 1 ->  {
