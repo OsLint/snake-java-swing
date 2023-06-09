@@ -1,13 +1,10 @@
-
-
+import Events.GameStateEvent;
 import InterfaceLink.GameStateListner;
-import Logic.BoardLogic;
+import Logic.BoardLogic;;
+import Logic.GameState;
 import Logic.PlayerInput;
 import Visual.BoardVisual;
-
 import javax.swing.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 class Main extends JFrame {
 
@@ -16,7 +13,6 @@ class Main extends JFrame {
     }
 
     public static String playerName;
-    private static PlayerInput playerInput;
 
     public Main () {
         super("Snake");
@@ -32,15 +28,25 @@ class Main extends JFrame {
         }
         BoardLogic boardLogic = new BoardLogic();
         BoardVisual boardVisual = new BoardVisual(boardLogic);
-        playerInput = new PlayerInput(boardLogic);
+        PlayerInput playerInput = new PlayerInput(boardLogic);
 
         boardLogic.setPlayerName(playerName);
+
+        boardLogic.addGameStateListner(new GameStateListner() {
+            @Override
+            public void changeGameState(GameStateEvent event) {
+                if (event.getGameState() == GameState.UNPAUSED) {
+                    Main.this.requestFocusInWindow();
+                }
+            }
+        });
 
         addKeyListener(playerInput);
         boardVisual.addGameStateListner(boardLogic);
         boardLogic.addRefreshListner(boardVisual);
         boardLogic.addFoodEventListner(boardLogic);
         boardLogic.addGameStateListner(boardLogic);
+        boardLogic.addGameStateListner(playerInput);
         playerInput.addChangeDirectionListner(boardLogic);
         getContentPane().add(boardVisual);
     }
@@ -56,5 +62,4 @@ class Main extends JFrame {
             return null; // Gracz wybrał opcję wyjścia lub anulował
         }
     }
-
 }

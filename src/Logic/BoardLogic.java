@@ -14,7 +14,6 @@ import java.util.Random;
 
 
 public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, FoodEventListner, GameStateListner {
-    private final Object lock = new Object();
     private final int[][] gameBoard;
     private static final int ROWS = 25;
     private static final int COLS = 16;
@@ -28,7 +27,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     private int playerScore = 0;
     private boolean gameOngoing;
     private boolean isGamePaused;
-    public  Direction DIRECTION;
+    private  Direction DIRECTION;
     private final Map<Integer, int[]> segmentsMap;
     private final ArrayList<RefreshListner> refreshListners = new ArrayList<>();
     private final ArrayList<FoodEventListner> foodEventListners = new ArrayList<>();
@@ -339,8 +338,8 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
 
     @Override
     public void newGame() {
-        synchronized (lock) {
-            lock.notifyAll();
+        synchronized (this) {
+            notifyAll();
             snakeLenght = 1;
             playerScore = 0;
         }
@@ -354,24 +353,36 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
         GameState gameState = gameStateEvent.getGameState();
-        switch (gameState){
-            case PAUSED -> isGamePaused = true;
-            case UNPAUSED -> {
-                isGamePaused = false;
-                synchronized (this) {
+        synchronized (this){
+            switch (gameState){
+                case PAUSED -> {
+                    isGamePaused = true;
+                    fireExcludedGameState(new GameStateEvent(this,GameState.PAUSED));
+                }
+                case UNPAUSED -> {
+                    isGamePaused = false;
                     notifyAll();
-                }}
-            case GAMEOVER -> {
-                System.out.println("Koniec gry ");
-                //gameOngoing = false;
-                synchronized (lock) {
+                    fireExcludedGameState(new GameStateEvent(this,GameState.UNPAUSED));
+                }
+                case GAMEOVER -> {
+                    System.out.println("Koniec gry ");
+                    //gameOngoing = false;
                     try {
-                        lock.wait();
+                        wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    //2do: zapis wyniku do pliku binarnego
                 }
-                //2do: zapis wyniku do pliku binarnego
+            }
+        }
+
+    }
+
+    private void fireExcludedGameState(GameStateEvent gameStateEvent){
+        for (GameStateListner listener : gameStateListners) {
+            if(listener != this){
+                listener.changeGameState(gameStateEvent);
             }
         }
     }

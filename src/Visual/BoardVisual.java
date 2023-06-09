@@ -8,6 +8,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import Events.GameStateEvent;
@@ -90,13 +91,35 @@ public class BoardVisual extends JPanel implements RefreshListner {
 
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
                 fireGameState(new GameStateEvent(this, GameState.PAUSED));
+                boolean gamePaused = boardLink.getIspauseGame();
+                if (gamePaused) {
+                    int option = JOptionPane.showOptionDialog(
+                            null,
+                            "Score: " + boardLink.getPLayerScore(),
+                            "Game Paused",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE,
+                            null,
+                            new Object[]{"Resume"},
+                            "Resume"
+                    );
+
+                    if (option == 0) {
+                        fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
+                    }
+                }
+
+                /*fireGameState(new GameStateEvent(this, GameState.PAUSED));
                 boolean gamePaused = boardLink.getIspauseGame();
                 if (gamePaused) {
                     JOptionPane.showMessageDialog(null, "Score: " +
                             boardLink.getPLayerScore(), "Game Paused", JOptionPane.INFORMATION_MESSAGE);
+
                     fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
-                }
+                    requestFocus();
+                }*/
             }
         });
 
@@ -107,8 +130,6 @@ public class BoardVisual extends JPanel implements RefreshListner {
         add(stopButton,BorderLayout.SOUTH);
         boardLink.initializeGameBoard();
         repaintTable();
-
-
     }
 
     @Override
@@ -192,5 +213,10 @@ public class BoardVisual extends JPanel implements RefreshListner {
     }
     public void addGameStateListner(GameStateListner listner){
         this.gameStateListners.add(listner);
+    }
+
+    @Override
+    public void addKeyListener(KeyListener keyListener) {
+        super.addKeyListener(keyListener);
     }
 }

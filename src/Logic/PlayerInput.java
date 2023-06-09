@@ -10,17 +10,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
-public class PlayerInput implements KeyListener, Runnable,GameStateListner {
+public class PlayerInput implements KeyListener, Runnable, GameStateListner {
     private final BoardLink boardLink;
     private Direction currentDirection = Direction.UP;
     private final ArrayList<ChangeDirectionListner> directionListners = new ArrayList<>();
     private boolean isGamePaused;
+    private Thread thread;
 
 
     public PlayerInput(BoardLink boardLink) {
         this.boardLink = boardLink;
-
-        Thread thread = new Thread(this);
+        thread = new Thread(this);
         thread.start();
     }
     @Override
@@ -29,12 +29,16 @@ public class PlayerInput implements KeyListener, Runnable,GameStateListner {
         currentDirection = boardLink.getCurrentDirection();
         if (keyCode == KeyEvent.VK_UP && currentDirection != Direction.DOWN) {
             currentDirection = Direction.UP;
+            System.out.println("zmiana kierunku góra");
         } else if (keyCode == KeyEvent.VK_DOWN && currentDirection != Direction.UP) {
             currentDirection = Direction.DOWN;
+            System.out.println("zmiana kierunku dol");
         } else if (keyCode == KeyEvent.VK_LEFT && currentDirection != Direction.RIGHT) {
             currentDirection = Direction.LEFT;
+            System.out.println("zmiana kierunku lewy");
         } else if (keyCode == KeyEvent.VK_RIGHT && currentDirection != Direction.LEFT) {
             currentDirection = Direction.RIGHT;
+            System.out.println("zmiana kierunku prawy");
         }
     }
     @Override
@@ -75,19 +79,21 @@ public class PlayerInput implements KeyListener, Runnable,GameStateListner {
         for (ChangeDirectionListner listener : directionListners) {
             listener.setDirection(event);
         }
-    }
-    public void addChangeDirectionListner (ChangeDirectionListner listner) {
+    }public void addChangeDirectionListner (ChangeDirectionListner listner) {
         this.directionListners.add(listner);
     }
 
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
-        if(gameStateEvent.getGameState() == GameState.PAUSED){
+        GameState gameState = gameStateEvent.getGameState();
+        if(gameState == GameState.PAUSED){
             isGamePaused = true;
-        }else if(gameStateEvent.getGameState() == GameState.UNPAUSED){
+            System.out.println("Player input dostaje info by się zatrzymać");
+        }else if(gameState == GameState.UNPAUSED){
+            System.out.println("Player input dostaje info by wznowić");
             isGamePaused = false;
             synchronized (this) {
-                notifyAll();
+                notify();
             }
         }
     }
