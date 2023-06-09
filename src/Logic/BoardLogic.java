@@ -2,7 +2,7 @@ package Logic;
 
 import Events.ChangeDirectionEvent;
 import Events.FoodEatenEvent;
-import Events.GameOverEvent;
+import Events.GameStateEvent;
 import Events.RefreshEvent;
 import InterfaceLink.*;
 
@@ -13,7 +13,8 @@ import java.util.Random;
 
 
 
-public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, FoodEventListner, GameOverListner {
+public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, FoodEventListner, GameStateListner {
+    private final Object lock = new Object();
     private final int[][] gameBoard;
     private static final int ROWS = 25;
     private static final int COLS = 16;
@@ -26,11 +27,15 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     private int snakeLenght = 1;
     private int playerScore = 0;
     private boolean gameOngoing;
+    private boolean isGamePaused;
     public  Direction DIRECTION;
     private final Map<Integer, int[]> segmentsMap;
     private final ArrayList<RefreshListner> refreshListners = new ArrayList<>();
     private final ArrayList<FoodEventListner> foodEventListners = new ArrayList<>();
-    private final ArrayList<GameOverListner> gameOverListners = new ArrayList<>();
+    private final ArrayList<GameStateListner> gameStateListners = new ArrayList<>();
+    private final Thread thread;
+    private final Thread foodThread;
+    private final Thread refreshThread;
 
     public BoardLogic() {
         //Inicjalizacja pól prywatnych
@@ -44,15 +49,15 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
         };
 
         //Tworzenie wątku odpowiadającego za logikę
-        Thread thread = new Thread(this);
+        thread = new Thread(this);
         thread.start();
 
         //Tworzenie wątku odpowiadającego za generacje jedzenia
-        Thread foodThread = new Thread(this::generateFood);
+        foodThread = new Thread(this::generateFood);
         foodThread.start();
 
         // Tworzenie i uruchamianie wątku odświeżającego część graficzną
-        Thread refreshThread = new Thread(this::refreshThreadLoop);
+        refreshThread = new Thread(this::refreshThreadLoop);
         refreshThread.start();
 
 
@@ -64,6 +69,15 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     @Override
     public void run() {
         while (gameOngoing) {
+            if (isGamePaused) {
+                try {
+                    synchronized (this) {
+                        wait();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             playerScore++;
             //Segmenty, które w poprzednim ruchu miały wartość 1 mają zmienianą wartość na 2
             gameBoard[snakeY][snakeX] = 2;
@@ -90,9 +104,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
                 fireFoodEvent(foodEatenEvent);
             }  //Sprawdzamy, czy w tym ruchu snake zjadł swój ogon
             else if(snakeLenght >= 2 && cellValue == 2) {
-                System.out.println("Sam się zjadłeś koleś");
-                fireGameOver(new GameOverEvent(this));
-                //gameOngoing = false;
+                fireGameState(new GameStateEvent(this,GameState.GAMEOVER));
             }
             }catch (ArrayIndexOutOfBoundsException ignored) {
                 //Ignorujemy wyjątek
@@ -102,9 +114,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
             try{
                 gameBoard[snakeY][snakeX] = 1;
             }catch (ArrayIndexOutOfBoundsException e){
-                //System.out.println("koniec gry");
-                fireGameOver(new GameOverEvent(this));
-               // gameOngoing = false;
+                fireGameState(new GameStateEvent(this,GameState.GAMEOVER));
             }
 
             //Dodajemy nowy segment do mapy segmentów
@@ -126,6 +136,15 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     }
     private void generateFood() {
         while (gameOngoing) {
+            if (isGamePaused) {
+                try {
+                    synchronized (this) {
+                        wait();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             Random random = new Random();
             int foodRow = random.nextInt(ROWS);
             int foodCol = random.nextInt(COLS);
@@ -231,7 +250,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
                 playerScore +=100;
                 snakeLenght++;
             }
-            case BLACKAPPLE -> fireGameOver(new GameOverEvent(this));
+            case BLACKAPPLE -> fireGameState(new GameStateEvent(this,GameState.GAMEOVER));
         }
     }
     private void fireFoodEvent(FoodEatenEvent foodEatenEvent) {
@@ -239,14 +258,23 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
             listener.consoooomeFood(foodEatenEvent);
         }
     }
-    private void fireGameOver(GameOverEvent gameOverEvent){
-        for (GameOverListner listener : gameOverListners) {
-            listener.endGame(gameOverEvent);
+    private void fireGameState(GameStateEvent gameStateEvent){
+        for (GameStateListner listener : gameStateListners) {
+            listener.changeGameState(gameStateEvent);
         }
     }
 
     public void refreshThreadLoop() {
         while(gameOngoing) {
+            if (isGamePaused) {
+                try {
+                    synchronized (this) {
+                        wait();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             fireRefresh(new RefreshEvent(this, this));
             try {
                 synchronized (this){
@@ -268,13 +296,26 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     public void addFoodEventListner(FoodEventListner listner){
         this.foodEventListners.add(listner);
     }
-    public void addGameOverListner(GameOverListner listner){
-        this.gameOverListners.add(listner);
+    public void addGameStateListner(GameStateListner listner){
+        this.gameStateListners.add(listner);
     }
+
     @Override
     public Direction getCurrentDirection() {
         return DIRECTION;
     }
+
+    @Override
+    public int getCellValue(int row,int col) {
+        if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+            return gameBoard[row][col];
+        } else {
+            throw new IllegalArgumentException("Invalid row or column value");
+        }
+    }
+
+
+
     @Override
     public int getPLayerScore() {
         return playerScore;
@@ -295,9 +336,45 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     public String getPlayerName() {
         return playerName;
     }
+
     @Override
-    public void endGame(GameOverEvent gameOverEvent) {
-        System.out.println("Koniec gry ");
-        gameOngoing = false;
+    public void newGame() {
+        synchronized (lock) {
+            lock.notifyAll();
+            snakeLenght = 1;
+            playerScore = 0;
+        }
     }
+
+    @Override
+    public boolean getIspauseGame() {
+        return isGamePaused;
+    }
+
+    @Override
+    public void changeGameState(GameStateEvent gameStateEvent) {
+        GameState gameState = gameStateEvent.getGameState();
+        switch (gameState){
+            case PAUSED -> isGamePaused = true;
+            case UNPAUSED -> {
+                isGamePaused = false;
+                synchronized (this) {
+                    notifyAll();
+                }}
+            case GAMEOVER -> {
+                System.out.println("Koniec gry ");
+                //gameOngoing = false;
+                synchronized (lock) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                //2do: zapis wyniku do pliku binarnego
+            }
+        }
+    }
+
+
 }

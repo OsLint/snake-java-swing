@@ -12,6 +12,10 @@ public interface BoardLink {
     boolean isRecentSegment(int row, int col);
     boolean getIsGameOngoing();
     Direction getCurrentDirection();
+    int getCellValue(int row, int col);
+    void newGame();
+    boolean getIspauseGame();
+
 
 
 }

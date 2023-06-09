@@ -6,16 +6,22 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import Events.GameStateEvent;
 import Events.RefreshEvent;
 import InterfaceLink.BoardLink;
+import InterfaceLink.GameStateListner;
 import InterfaceLink.RefreshListner;
+import Logic.GameState;
 
 public class BoardVisual extends JPanel implements RefreshListner {
     private final JPanel playerScore;
     private final BoardLink boardLink;
     private final DefaultTableModel model;
-    private int [] [] gameBoard;
+    private final JButton stopButton;
     private final ImageIcon northSnakeHeadIcon;
     private final ImageIcon southSnakeHeadIcon;
     private final ImageIcon westSnakeHeadIcon;
@@ -26,6 +32,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private final ImageIcon goldAppleIcon;
     private final ImageIcon blackAppleIcon;
     private final ImageIcon scissorsIcon;
+    private final ArrayList<GameStateListner> gameStateListners = new ArrayList<>();
 
     public BoardVisual(BoardLink boardLink) {
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
@@ -50,7 +57,6 @@ public class BoardVisual extends JPanel implements RefreshListner {
         blackAppleIcon = new ImageIcon(blackAppleImagePath);
         scissorsIcon = new ImageIcon(scissorsImagePath);
         this.boardLink = boardLink;
-        gameBoard = boardLink.getGameBoard();
         model = new DefaultTableModel(boardLink.getRows(),boardLink.getCols());
         playerScore = new JPanel(){
             @Override
@@ -64,6 +70,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
         int cellSize = 20;
         JTable table = new JTable(model);
         Border tableBorder = BorderFactory.createDashedBorder(Color.BLACK, 5, 2, 2, false);
+        stopButton = new JButton("Pause the Game");
         table.setBorder(tableBorder);
         table.setRowHeight(cellSize);
         table.setTableHeader(null);
@@ -81,10 +88,23 @@ public class BoardVisual extends JPanel implements RefreshListner {
         table.setFocusable(false);
         table.setDefaultRenderer(Object.class, new CustomCellRenderer());
 
+        stopButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fireGameState(new GameStateEvent(this, GameState.PAUSED));
+                boolean gamePaused = boardLink.getIspauseGame();
+                if (gamePaused) {
+                    JOptionPane.showMessageDialog(null, "Score: " +
+                            boardLink.getPLayerScore(), "Game Paused", JOptionPane.INFORMATION_MESSAGE);
+                    fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
+                }
+            }
+        });
+
         playerScore.setBackground(Color.BLACK);
         setBackground(Color.BLACK);
         add(table,BorderLayout.CENTER);
         add(playerScore,BorderLayout.SOUTH);
+        add(stopButton,BorderLayout.SOUTH);
         boardLink.initializeGameBoard();
         repaintTable();
 
@@ -93,7 +113,6 @@ public class BoardVisual extends JPanel implements RefreshListner {
 
     @Override
     public void refresh(RefreshEvent evt) {
-        this.gameBoard = boardLink.getGameBoard();
         playerScore.repaint();
         this.repaintTable();
     }
@@ -102,7 +121,6 @@ public class BoardVisual extends JPanel implements RefreshListner {
         int colorValue;
         @Override
         public void setValue(Object value) {
-            // Do nothing to hide the value
         }
 
         @Override
@@ -139,7 +157,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
         ) {
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            colorValue = gameBoard[row][column];
+            colorValue = boardLink.getCellValue(row,column);
             switch (colorValue){
                 case 0 -> component.setBackground(Color.MAGENTA);
                 case 1 -> component.setBackground(Color.ORANGE);
@@ -156,7 +174,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
     private void repaintTable() {
         for (int row = 0; row < boardLink.getRows(); row++) {
             for (int col = 0; col < boardLink.getCols(); col++) {
-                int segmentValue = gameBoard[row][col];
+                int segmentValue = boardLink.getCellValue(row,col);
                 if (segmentValue == 2 && !boardLink.isRecentSegment(row, col)) {
                     segmentValue = 0;
                 }
@@ -165,5 +183,14 @@ public class BoardVisual extends JPanel implements RefreshListner {
         }
         revalidate();
         repaint();
+    }
+
+    private void fireGameState(GameStateEvent gameStateEvent){
+        for (GameStateListner listener : gameStateListners) {
+            listener.changeGameState(gameStateEvent);
+        }
+    }
+    public void addGameStateListner(GameStateListner listner){
+        this.gameStateListners.add(listner);
     }
 }

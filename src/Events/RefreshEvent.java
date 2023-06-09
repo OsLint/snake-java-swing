@@ -1,7 +1,6 @@
 package Events;
 
 import Logic.BoardLogic;
-import Logic.Direction;
 
 import java.util.EventObject;
 

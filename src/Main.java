@@ -1,17 +1,22 @@
 
 
+import InterfaceLink.GameStateListner;
 import Logic.BoardLogic;
 import Logic.PlayerInput;
 import Visual.BoardVisual;
 
 import javax.swing.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
-class Main extends JFrame  {
+class Main extends JFrame {
+
     public static void main(String[] args) {;
         SwingUtilities.invokeLater(Main::new);
     }
 
     public static String playerName;
+    private static PlayerInput playerInput;
 
     public Main () {
         super("Snake");
@@ -27,14 +32,15 @@ class Main extends JFrame  {
         }
         BoardLogic boardLogic = new BoardLogic();
         BoardVisual boardVisual = new BoardVisual(boardLogic);
-        PlayerInput playerInput = new PlayerInput(boardLogic);
+        playerInput = new PlayerInput(boardLogic);
 
         boardLogic.setPlayerName(playerName);
 
         addKeyListener(playerInput);
+        boardVisual.addGameStateListner(boardLogic);
         boardLogic.addRefreshListner(boardVisual);
         boardLogic.addFoodEventListner(boardLogic);
-        boardLogic.addGameOverListner(boardLogic);
+        boardLogic.addGameStateListner(boardLogic);
         playerInput.addChangeDirectionListner(boardLogic);
         getContentPane().add(boardVisual);
     }
