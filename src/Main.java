@@ -35,7 +35,10 @@ class Main extends JFrame {
         boardLogic.addGameStateListner(new GameStateListner() {
             @Override
             public void changeGameState(GameStateEvent event) {
-                if (event.getGameState() == GameState.UNPAUSED) {
+                if (
+                        event.getGameState() == GameState.UNPAUSED
+                        || event.getGameState() == GameState.NEWGAME
+                ) {
                     Main.this.requestFocusInWindow();
                 }
             }
@@ -47,6 +50,7 @@ class Main extends JFrame {
         boardLogic.addFoodEventListner(boardLogic);
         boardLogic.addGameStateListner(boardLogic);
         boardLogic.addGameStateListner(playerInput);
+        boardLogic.addGameStateListner(boardVisual);
         playerInput.addChangeDirectionListner(boardLogic);
         getContentPane().add(boardVisual);
     }

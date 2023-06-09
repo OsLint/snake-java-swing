@@ -1,5 +1,5 @@
 package Logic;
 
 public enum GameState {
-    PAUSED,UNPAUSED,GAMEOVER
+    PAUSED,UNPAUSED,GAMEOVER,NEWGAME
 }

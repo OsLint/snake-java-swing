@@ -62,12 +62,14 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
 
     }
 
+    @Override
     public void setPlayerName (String playerName) {
         this.playerName = playerName;
     }
     @Override
     public void run() {
         while (gameOngoing) {
+            System.out.println("main thread is working");
             if (isGamePaused) {
                 try {
                     synchronized (this) {
@@ -135,6 +137,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
     }
     private void generateFood() {
         while (gameOngoing) {
+            System.out.println("food gen is working");
             if (isGamePaused) {
                 try {
                     synchronized (this) {
@@ -265,6 +268,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
 
     public void refreshThreadLoop() {
         while(gameOngoing) {
+            System.out.println("refresh is working");
             if (isGamePaused) {
                 try {
                     synchronized (this) {
@@ -338,17 +342,22 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
 
     @Override
     public void newGame() {
-        synchronized (this) {
-            notifyAll();
-            snakeLenght = 1;
-            playerScore = 0;
-        }
+        System.out.println("game gets message to do  new game");
+        snakeX = 8;
+        snakeY = 12;
+        snakeLenght = 1;
+        playerScore = 0;
+        isGamePaused = false;
+        notifyAll();
+
     }
 
     @Override
     public boolean getIspauseGame() {
         return isGamePaused;
     }
+
+
 
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
@@ -365,15 +374,15 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner, 
                     fireExcludedGameState(new GameStateEvent(this,GameState.UNPAUSED));
                 }
                 case GAMEOVER -> {
-                    System.out.println("Koniec gry ");
-                    //gameOngoing = false;
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //2do: zapis wyniku do pliku binarnego
+                    isGamePaused = true;
+                    fireExcludedGameState(new GameStateEvent(this,GameState.GAMEOVER));
+
                 }
+                case NEWGAME -> {
+                    newGame();
+                    fireExcludedGameState(new GameStateEvent(this,GameState.NEWGAME));
+                }
+
             }
         }
 

@@ -18,8 +18,9 @@ import InterfaceLink.GameStateListner;
 import InterfaceLink.RefreshListner;
 import Logic.GameState;
 
-public class BoardVisual extends JPanel implements RefreshListner {
+public class BoardVisual extends JPanel implements RefreshListner, GameStateListner {
     private final JPanel playerScore;
+    private JDialog gameOverDialog;
     private final BoardLink boardLink;
     private final DefaultTableModel model;
     private final JButton stopButton;
@@ -110,16 +111,6 @@ public class BoardVisual extends JPanel implements RefreshListner {
                         fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
                     }
                 }
-
-                /*fireGameState(new GameStateEvent(this, GameState.PAUSED));
-                boolean gamePaused = boardLink.getIspauseGame();
-                if (gamePaused) {
-                    JOptionPane.showMessageDialog(null, "Score: " +
-                            boardLink.getPLayerScore(), "Game Paused", JOptionPane.INFORMATION_MESSAGE);
-
-                    fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
-                    requestFocus();
-                }*/
             }
         });
 
@@ -135,7 +126,7 @@ public class BoardVisual extends JPanel implements RefreshListner {
     @Override
     public void refresh(RefreshEvent evt) {
         playerScore.repaint();
-        this.repaintTable();
+        repaintTable();
     }
 
     private class CustomCellRenderer extends DefaultTableCellRenderer {
@@ -191,6 +182,43 @@ public class BoardVisual extends JPanel implements RefreshListner {
             return component;
         }
     }
+
+    @Override
+    public void changeGameState(GameStateEvent gameStateEvent) {
+
+        if(gameStateEvent.getGameState() == GameState.GAMEOVER){
+            int score = boardLink.getPLayerScore();
+            if (gameOverDialog == null) {
+                gameOverDialog = new JDialog(
+                        SwingUtilities.getWindowAncestor(this),
+                        "Game Over",
+                        Dialog.ModalityType.APPLICATION_MODAL
+                );
+                gameOverDialog.setLayout(new BorderLayout());
+                gameOverDialog.setSize(200, 100);
+
+                JLabel scoreLabel = new JLabel("Score: " + score);
+                scoreLabel.setHorizontalAlignment(JLabel.CENTER);
+
+                JButton newGameButton = new JButton("New Game");
+                newGameButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        fireGameState(new GameStateEvent(this,GameState.NEWGAME));
+                        System.out.println("start new game");
+                        gameOverDialog.dispose();
+                    }
+                });
+
+                gameOverDialog.add(scoreLabel, BorderLayout.CENTER);
+                gameOverDialog.add(newGameButton, BorderLayout.SOUTH);
+            }
+
+            gameOverDialog.setVisible(true);
+        }
+
+    }
+
 
     private void repaintTable() {
         for (int row = 0; row < boardLink.getRows(); row++) {

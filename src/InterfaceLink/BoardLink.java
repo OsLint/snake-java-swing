@@ -15,6 +15,7 @@ public interface BoardLink {
     int getCellValue(int row, int col);
     void newGame();
     boolean getIspauseGame();
+    void setPlayerName (String playerName);
 
 
 

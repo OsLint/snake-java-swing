@@ -29,16 +29,16 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
         currentDirection = boardLink.getCurrentDirection();
         if (keyCode == KeyEvent.VK_UP && currentDirection != Direction.DOWN) {
             currentDirection = Direction.UP;
-            System.out.println("zmiana kierunku góra");
+            //System.out.println("zmiana kierunku góra");
         } else if (keyCode == KeyEvent.VK_DOWN && currentDirection != Direction.UP) {
             currentDirection = Direction.DOWN;
-            System.out.println("zmiana kierunku dol");
+            //System.out.println("zmiana kierunku dol");
         } else if (keyCode == KeyEvent.VK_LEFT && currentDirection != Direction.RIGHT) {
             currentDirection = Direction.LEFT;
-            System.out.println("zmiana kierunku lewy");
+            //System.out.println("zmiana kierunku lewy");
         } else if (keyCode == KeyEvent.VK_RIGHT && currentDirection != Direction.LEFT) {
             currentDirection = Direction.RIGHT;
-            System.out.println("zmiana kierunku prawy");
+            //System.out.println("zmiana kierunku prawy");
         }
     }
     @Override
@@ -61,7 +61,7 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
                     throw new RuntimeException(e);
                 }
             }
-            System.out.println("DEbug: działam player input...");
+            //System.out.println("DEbug: działam player input...");
             if(currentDirection != null){
                 ChangeDirectionEvent event = new ChangeDirectionEvent(this,this.currentDirection);
                 fireChangeDirection(event);
@@ -88,9 +88,7 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
         GameState gameState = gameStateEvent.getGameState();
         if(gameState == GameState.PAUSED){
             isGamePaused = true;
-            System.out.println("Player input dostaje info by się zatrzymać");
-        }else if(gameState == GameState.UNPAUSED){
-            System.out.println("Player input dostaje info by wznowić");
+        }else if(gameState == GameState.UNPAUSED || gameState == GameState.NEWGAME){
             isGamePaused = false;
             synchronized (this) {
                 notify();
