@@ -8,8 +8,6 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyListener;
-import java.util.ArrayList;
 
 import Events.GameStateEvent;
 import Events.RefreshEvent;
@@ -34,19 +32,18 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
     private final ImageIcon goldAppleIcon;
     private final ImageIcon blackAppleIcon;
     private final ImageIcon scissorsIcon;
-    private final ArrayList<GameStateListner> gameStateListners = new ArrayList<>();
 
     public BoardVisual(BoardLink boardLink) {
-        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         String northSnakeHeadImagePath = "snakeHeadNorth.png";
         String westSnakeHeadImagePath = "snakeHeadWest.png";
         String eastSnakeHeadImagePath = "snakeHeadEast.png";
         String southSnakeHeadImagePath = "snakeHeadSouth.png";
-        String snakeBodyImagePath ="snakeBody.png";
+        String snakeBodyImagePath = "snakeBody.png";
         String grassImagePath = "grass20x20.png";
         String appleImagePath = "apple20x20.png";
-        String goldAppleImagePath ="goldapple20x20.png";
-        String blackAppleImagePath= "blackapple20x20.png";
+        String goldAppleImagePath = "goldapple20x20.png";
+        String blackAppleImagePath = "blackapple20x20.png";
         String scissorsImagePath = "scissors20x20.png";
         northSnakeHeadIcon = new ImageIcon(northSnakeHeadImagePath);
         southSnakeHeadIcon = new ImageIcon(southSnakeHeadImagePath);
@@ -59,14 +56,14 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
         blackAppleIcon = new ImageIcon(blackAppleImagePath);
         scissorsIcon = new ImageIcon(scissorsImagePath);
         this.boardLink = boardLink;
-        model = new DefaultTableModel(boardLink.getRows(),boardLink.getCols());
-        playerScore = new JPanel(){
+        model = new DefaultTableModel(boardLink.getRows(), boardLink.getCols());
+        playerScore = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.PLAIN, 20));
-                g.drawString("Score: " + boardLink.getPLayerScore(), (this.getWidth()/2)-50, 21);
+                g.drawString("Score: " + boardLink.getPLayerScore(), (this.getWidth() / 2) - 50, 21);
             }
         };
         int cellSize = 20;
@@ -86,14 +83,14 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
             column.setCellRenderer(new CustomCellRenderer());
         }
         table.setCellSelectionEnabled(false);
-        table.setDefaultEditor(Object.class,null);
+        table.setDefaultEditor(Object.class, null);
         table.setFocusable(false);
         table.setDefaultRenderer(Object.class, new CustomCellRenderer());
 
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                fireGameState(new GameStateEvent(this, GameState.PAUSED));
+                boardLink.fireGameState(new GameStateEvent(this, GameState.PAUSED));
                 boolean gamePaused = boardLink.getIspauseGame();
                 if (gamePaused) {
                     int option = JOptionPane.showOptionDialog(
@@ -108,7 +105,7 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
                     );
 
                     if (option == 0) {
-                        fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
+                        boardLink.fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
                     }
                 }
             }
@@ -116,21 +113,16 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
 
         playerScore.setBackground(Color.BLACK);
         setBackground(Color.BLACK);
-        add(table,BorderLayout.CENTER);
-        add(playerScore,BorderLayout.SOUTH);
-        add(stopButton,BorderLayout.SOUTH);
+        add(table, BorderLayout.CENTER);
+        add(playerScore, BorderLayout.SOUTH);
+        add(stopButton, BorderLayout.SOUTH);
         boardLink.initializeGameBoard();
-        repaintTable();
-    }
-
-    @Override
-    public void refresh(RefreshEvent evt) {
-        playerScore.repaint();
         repaintTable();
     }
 
     private class CustomCellRenderer extends DefaultTableCellRenderer {
         int colorValue;
+
         @Override
         public void setValue(Object value) {
         }
@@ -138,11 +130,11 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            switch (colorValue){
-                case 0 -> g.drawImage(grassIcon.getImage(),0,0,getWidth(),getHeight(),null);
-                case 1 ->  {
-                    if(boardLink.getCurrentDirection() != null){
-                        switch (boardLink.getCurrentDirection()){
+            switch (colorValue) {
+                case 0 -> g.drawImage(grassIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+                case 1 -> {
+                    if (boardLink.getCurrentDirection() != null) {
+                        switch (boardLink.getCurrentDirection()) {
                             case UP -> g.drawImage(
                                     northSnakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
                             case DOWN -> g.drawImage(
@@ -152,25 +144,26 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
                             case RIGHT -> g.drawImage(
                                     eastSnakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
                         }
-                    }else {
+                    } else {
                         g.drawImage(
                                 northSnakeHeadIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
                     }
                 }
-                case 2 -> g.drawImage(snakeBodyIcon.getImage(),0,0,getWidth(),getHeight(),null);
-                case 3 -> g.drawImage(appleIcon.getImage(),0,0,getWidth(),getHeight(),null);
-                case 4 -> g.drawImage(goldAppleIcon.getImage(),0,0,getWidth(),getHeight(),null);
-                case 5 -> g.drawImage(scissorsIcon.getImage(),0,0,getWidth(),getHeight(),null);
-                case 6 -> g.drawImage(blackAppleIcon.getImage(),0,0,getWidth(),getHeight(),null);
+                case 2 -> g.drawImage(snakeBodyIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+                case 3 -> g.drawImage(appleIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+                case 4 -> g.drawImage(goldAppleIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+                case 5 -> g.drawImage(scissorsIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
+                case 6 -> g.drawImage(blackAppleIcon.getImage(), 0, 0, getWidth(), getHeight(), null);
             }
         }
+
         @Override
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
         ) {
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            colorValue = boardLink.getCellValue(row,column);
-            switch (colorValue){
+            colorValue = boardLink.getCellValue(row, column);
+            switch (colorValue) {
                 case 0 -> component.setBackground(Color.MAGENTA);
                 case 1 -> component.setBackground(Color.ORANGE);
                 case 2 -> component.setBackground(Color.GREEN);
@@ -186,7 +179,7 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
 
-        if(gameStateEvent.getGameState() == GameState.GAMEOVER){
+        if (gameStateEvent.getGameState() == GameState.GAMEOVER) {
             int score = boardLink.getPLayerScore();
             if (gameOverDialog == null) {
                 gameOverDialog = new JDialog(
@@ -200,11 +193,22 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
                 JLabel scoreLabel = new JLabel("Score: " + score);
                 scoreLabel.setHorizontalAlignment(JLabel.CENTER);
 
+                JPanel namePanel = new JPanel(new BorderLayout());
+                JLabel nameLabel = new JLabel("Your Name:");
+
+                namePanel.add(nameLabel, BorderLayout.NORTH);
+
+                JTextField nameField = new JTextField();
+                nameField.setText(boardLink.getPlayerName());
+                namePanel.add(nameField, BorderLayout.CENTER);
+
                 JButton newGameButton = new JButton("New Game");
                 newGameButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        fireGameState(new GameStateEvent(this,GameState.NEWGAME));
+                        String newName = nameField.getText();
+                        boardLink.setPlayerName(newName);
+                        boardLink.fireGameState(new GameStateEvent(this, GameState.NEWGAME));
                         System.out.println("start new game");
                         gameOverDialog.dispose();
                     }
@@ -219,11 +223,10 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
 
     }
 
-
     private void repaintTable() {
         for (int row = 0; row < boardLink.getRows(); row++) {
             for (int col = 0; col < boardLink.getCols(); col++) {
-                int segmentValue = boardLink.getCellValue(row,col);
+                int segmentValue = boardLink.getCellValue(row, col);
                 if (segmentValue == 2 && !boardLink.isRecentSegment(row, col)) {
                     segmentValue = 0;
                 }
@@ -234,17 +237,11 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
         repaint();
     }
 
-    private void fireGameState(GameStateEvent gameStateEvent){
-        for (GameStateListner listener : gameStateListners) {
-            listener.changeGameState(gameStateEvent);
-        }
-    }
-    public void addGameStateListner(GameStateListner listner){
-        this.gameStateListners.add(listner);
+    @Override
+    public void refresh(RefreshEvent evt) {
+        playerScore.repaint();
+        repaintTable();
     }
 
-    @Override
-    public void addKeyListener(KeyListener keyListener) {
-        super.addKeyListener(keyListener);
-    }
+
 }
