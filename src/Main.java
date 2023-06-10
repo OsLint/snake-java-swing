@@ -1,7 +1,7 @@
 
 import Events.GameStateEvent;
 import Logic.BoardLogic;
-import Logic.GameState;
+import Enums.GameState;
 import Logic.PlayerInput;
 import Visual.BoardPanel;
 import Visual.ScoreboardPanel;
@@ -9,6 +9,10 @@ import Visual.ScoreboardPanel;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Klasa Main reprezentuje główną klasę programu.
+ * Uruchamia grę Snake.
+ */
 class Main extends JFrame {
 
     public static void main(String[] args) {
@@ -18,7 +22,11 @@ class Main extends JFrame {
     private final BoardLogic boardLogic;
     private String playerName;
 
-    public Main () {
+    /**
+     * Konstruktor klasy Main.
+     * Inicjalizuje interfejs użytkownika, logikę gry i panele.
+     */
+    public Main() {
         super("Snake");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -33,13 +41,13 @@ class Main extends JFrame {
         ScoreboardPanel scoreboardPanel = new ScoreboardPanel(boardLogic);
         JPanel emptyPanel = new JPanel();
 
-        int screenWidth = (int)Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+        int screenWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 
-        emptyPanel.setPreferredSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
-        emptyPanel.setMaximumSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
+        emptyPanel.setPreferredSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
+        emptyPanel.setMaximumSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
         emptyPanel.setBackground(Color.GRAY);
-        scoreboardPanel.setPreferredSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
-        scoreboardPanel.setMaximumSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
+        scoreboardPanel.setPreferredSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
+        scoreboardPanel.setMaximumSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
 
         playerName = showPlayerNameDialog();
         if (playerName == null) {
@@ -52,7 +60,7 @@ class Main extends JFrame {
         boardLogic.addGameStateListner(event -> {
             if (
                     event.getGameState() == GameState.UNPAUSED
-                    || event.getGameState() == GameState.NEWGAME
+                            || event.getGameState() == GameState.NEWGAME
             ) {
                 Main.this.requestFocusInWindow();
             }
@@ -65,11 +73,15 @@ class Main extends JFrame {
         playerInput.addChangeDirectionListner(boardLogic);
 
 
-        getContentPane().add(boardPanel,BorderLayout.CENTER);
-        getContentPane().add(scoreboardPanel,BorderLayout.EAST);
-        getContentPane().add(emptyPanel,BorderLayout.WEST);
+        getContentPane().add(boardPanel, BorderLayout.CENTER);
+        getContentPane().add(scoreboardPanel, BorderLayout.EAST);
+        getContentPane().add(emptyPanel, BorderLayout.WEST);
     }
 
+    /**
+     * Metoda showPlayerNameDialog wyświetla dialog z prośbą o podanie nazwy gracza.
+     * @return Nazwa gracza.
+     */
     private String showPlayerNameDialog() {
         JTextField playerNameField = new JTextField();
         Object[] message = {"Podaj nazwę gracza:", playerNameField};
@@ -81,7 +93,7 @@ class Main extends JFrame {
 
             if (!playerName.isEmpty()) {
                 boardLogic.setPlayerName(playerName);
-                boardLogic.fireGameState(new GameStateEvent(this,GameState.NEWGAME));
+                boardLogic.fireGameState(new GameStateEvent(this, GameState.NEWGAME));
                 return playerName;
             } else {
                 JOptionPane.showMessageDialog(

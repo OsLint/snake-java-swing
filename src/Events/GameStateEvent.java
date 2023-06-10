@@ -1,6 +1,6 @@
 package Events;
 
-import Logic.GameState;
+import Enums.GameState;
 
 import java.util.EventObject;
 

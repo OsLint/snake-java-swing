@@ -1,6 +1,6 @@
 package Events;
 
-import Logic.FoodType;
+import Enums.FoodType;
 
 import java.util.EventObject;
 

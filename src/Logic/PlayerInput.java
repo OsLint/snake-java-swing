@@ -1,5 +1,7 @@
 package Logic;
 
+import Enums.Direction;
+import Enums.GameState;
 import Events.ChangeDirectionEvent;
 import Events.GameStateEvent;
 import InterfaceLink.BoardLink;
@@ -15,12 +17,11 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
     private Direction currentDirection = Direction.UP;
     private final ArrayList<ChangeDirectionListner> directionListners = new ArrayList<>();
     private boolean isGamePaused;
-    private Thread thread;
 
 
     public PlayerInput(BoardLink boardLink) {
         this.boardLink = boardLink;
-        thread = new Thread(this);
+        Thread thread = new Thread(this);
         thread.start();
     }
     @Override

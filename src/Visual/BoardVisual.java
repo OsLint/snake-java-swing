@@ -9,6 +9,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 
+/**
+ * Klasa BoardPanel reprezentuje pole planszy gry.
+ */
+
 public class BoardVisual extends JPanel {
     private final ImageIcon northSnakeHeadIcon;
     private final ImageIcon southSnakeHeadIcon;
@@ -22,7 +26,11 @@ public class BoardVisual extends JPanel {
     private final ImageIcon scissorsIcon;
     private final BoardLink boardLink;
 
-
+    /**
+     Konstruktor klasy BoardVisual.
+     @param boardLink Obiekt typu BoardLink, który umożliwia połączenie z logiką gry.
+     @param model Model tabeli do wyświetlania planszy gry.
+     */
     public BoardVisual(BoardLink boardLink, DefaultTableModel model) {
         //Inicjalizacja pól prywatnych
         this.boardLink = boardLink;
@@ -62,7 +70,10 @@ public class BoardVisual extends JPanel {
         setBackground(Color.GRAY);
         add(table);
     }
-
+    /**
+     Klasa wewnętrzna CustomCellRenderer rozszerzająca DefaultTableCellRenderer.
+     Odpowiada za renderowanie komórek tabeli planszy gry.
+     */
     class CustomCellRenderer extends DefaultTableCellRenderer {
         int colorValue;
 
