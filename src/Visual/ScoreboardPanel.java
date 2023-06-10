@@ -14,13 +14,11 @@ import Logic.PlayerScore;
 
 public class ScoreboardPanel extends JPanel implements RefreshListner {
 
-    private JTable table;
-    private ScoreboardTableModel tableModel;
+    private final ScoreboardTableModel tableModel;
     protected ArrayList<PlayerScore> playerScores;
 
     public ScoreboardPanel(BoardLogic boardLogic) {
         setLayout(new BorderLayout());
-        this.setBackground(Color.BLACK);
 
         this.playerScores = boardLogic.getPlayerScores();
 
@@ -33,16 +31,16 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
         }
 
         tableModel = new ScoreboardTableModel();
-        table = new JTable(tableModel);
+        JTable table = new JTable(tableModel);
 
 
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(30);
 
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setPreferredSize(new Dimension(200,200));
-        scrollPane.setMaximumSize(new Dimension(200,200));
-        this.setPreferredSize(new Dimension(200,200));
+        scrollPane.setPreferredSize(new Dimension(this.getWidth(),this.getHeight()/5));
+        scrollPane.setMaximumSize(new Dimension(this.getWidth(),this.getHeight()/5));
+        scrollPane.setBackground(Color.GRAY);
         setBackground(Color.GRAY);
         add(scrollPane, BorderLayout.CENTER);
     }

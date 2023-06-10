@@ -1,8 +1,9 @@
 
+import Events.GameStateEvent;
 import Logic.BoardLogic;
 import Logic.GameState;
 import Logic.PlayerInput;
-import Visual.BoardVisual;
+import Visual.BoardPanel;
 import Visual.ScoreboardPanel;
 
 import javax.swing.*;
@@ -27,9 +28,18 @@ class Main extends JFrame {
 
 
         boardLogic = new BoardLogic();
-        BoardVisual boardVisual = new BoardVisual(boardLogic);
+        BoardPanel boardPanel = new BoardPanel(boardLogic);
         PlayerInput playerInput = new PlayerInput(boardLogic);
         ScoreboardPanel scoreboardPanel = new ScoreboardPanel(boardLogic);
+        JPanel emptyPanel = new JPanel();
+
+        int screenWidth = (int)Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+
+        emptyPanel.setPreferredSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
+        emptyPanel.setMaximumSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
+        emptyPanel.setBackground(Color.GRAY);
+        scoreboardPanel.setPreferredSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
+        scoreboardPanel.setMaximumSize(new Dimension(screenWidth/5,JFrame.MAXIMIZED_VERT));
 
         playerName = showPlayerNameDialog();
         if (playerName == null) {
@@ -48,14 +58,16 @@ class Main extends JFrame {
             }
         });
         addKeyListener(playerInput);
-        boardLogic.addRefreshListner(boardVisual);
+        boardLogic.addRefreshListner(boardPanel);
         boardLogic.addRefreshListner(scoreboardPanel);
         boardLogic.addGameStateListner(playerInput);
-        boardLogic.addGameStateListner(boardVisual);
+        boardLogic.addGameStateListner(boardPanel);
         playerInput.addChangeDirectionListner(boardLogic);
 
-        getContentPane().add(boardVisual,BorderLayout.CENTER);
+
+        getContentPane().add(boardPanel,BorderLayout.CENTER);
         getContentPane().add(scoreboardPanel,BorderLayout.EAST);
+        getContentPane().add(emptyPanel,BorderLayout.WEST);
     }
 
     private String showPlayerNameDialog() {
@@ -69,6 +81,7 @@ class Main extends JFrame {
 
             if (!playerName.isEmpty()) {
                 boardLogic.setPlayerName(playerName);
+                boardLogic.fireGameState(new GameStateEvent(this,GameState.NEWGAME));
                 return playerName;
             } else {
                 JOptionPane.showMessageDialog(

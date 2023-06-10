@@ -1,28 +1,15 @@
 package Visual;
 
+import InterfaceLink.BoardLink;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-import Events.GameStateEvent;
-import Events.RefreshEvent;
-import InterfaceLink.BoardLink;
-import InterfaceLink.GameStateListner;
-import InterfaceLink.RefreshListner;
-import Logic.GameState;
-
-public class BoardVisual extends JPanel implements RefreshListner, GameStateListner {
-    private final JPanel playerScore;
-    private final JPanel tablePanel;
-    private JDialog gameOverDialog;
-    private final BoardLink boardLink;
-    private final DefaultTableModel model;
-    private final JButton stopButton;
+public class BoardVisual extends JPanel {
     private final ImageIcon northSnakeHeadIcon;
     private final ImageIcon southSnakeHeadIcon;
     private final ImageIcon westSnakeHeadIcon;
@@ -33,9 +20,12 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
     private final ImageIcon goldAppleIcon;
     private final ImageIcon blackAppleIcon;
     private final ImageIcon scissorsIcon;
+    private final BoardLink boardLink;
 
-    public BoardVisual(BoardLink boardLink) {
-        setLayout(new BorderLayout());
+
+    public BoardVisual(BoardLink boardLink, DefaultTableModel model) {
+        //Inicjalizacja pól prywatnych
+        this.boardLink = boardLink;
         northSnakeHeadIcon = new ImageIcon("snakeHeadNorth.png");
         southSnakeHeadIcon = new ImageIcon("snakeHeadSouth.png");
         westSnakeHeadIcon = new ImageIcon("snakeHeadWest.png");
@@ -46,83 +36,34 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
         goldAppleIcon = new ImageIcon("goldapple20x20.png");
         blackAppleIcon = new ImageIcon("blackapple20x20.png");
         scissorsIcon = new ImageIcon("scissors20x20.png");
-        this.boardLink = boardLink;
-        model = new DefaultTableModel(boardLink.getRows(), boardLink.getCols());
-        playerScore = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(Color.WHITE);
-                g.setFont(new Font("Arial", Font.PLAIN, 20));
-                g.drawString("Score: " + boardLink.getPLayerScore(), (this.getWidth() / 2), 21);
-            }
-        };
-        int cellSize = 20;
+
         JTable table = new JTable(model);
-        tablePanel = new JPanel();
-        tablePanel.setLayout(new FlowLayout());
-        Border tableBorder = BorderFactory.createDashedBorder(Color.BLACK, 5, 2, 2, false);
-        stopButton = new JButton("Pause the Game");
-
-
-        table.setBorder(tableBorder);
-        table.setRowHeight(cellSize);
-        table.setTableHeader(null);
-        table.setBorder(tableBorder);
-
-        // Set column widths
+        //Ustawiamy wielkość komórek planszy
         for (int i = 0; i < boardLink.getCols(); i++) {
             TableColumn column = table.getColumnModel().getColumn(i);
-            column.setPreferredWidth(cellSize);
-            column.setMaxWidth(cellSize);
-            column.setMinWidth(cellSize);
-            column.setCellRenderer(new CustomCellRenderer());
+            column.setPreferredWidth(20);
+            column.setMaxWidth(20);
+            column.setMinWidth(20);
+            column.setCellRenderer(new BoardVisual.CustomCellRenderer());
         }
+
+        Border tableBorder = BorderFactory.createDashedBorder(
+                Color.BLACK, 5, 2, 2, false
+        );
+        table.setBorder(tableBorder);
+        table.setRowHeight(20);
+        table.setTableHeader(null);
         table.setCellSelectionEnabled(false);
         table.setDefaultEditor(Object.class, null);
-        table.setFocusable(false);
-        table.setDefaultRenderer(Object.class, new CustomCellRenderer());
-        table.setPreferredSize(new Dimension(20*16,20*25));
+        table.setDefaultRenderer(Object.class, new BoardVisual.CustomCellRenderer());
+        table.setPreferredSize(new Dimension(20 * 16, 20 * 25));
+        table.setMaximumSize(new Dimension(20 * 16, 20 * 25));
 
-        stopButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-                boardLink.fireGameState(new GameStateEvent(this, GameState.PAUSED));
-                boolean gamePaused = boardLink.getIspauseGame();
-                if (gamePaused) {
-                    int option = JOptionPane.showOptionDialog(
-                            null,
-                            "Score: " + boardLink.getPLayerScore(),
-                            "Game Paused",
-                            JOptionPane.DEFAULT_OPTION,
-                            JOptionPane.INFORMATION_MESSAGE,
-                            null,
-                            new Object[]{"Resume"},
-                            "Resume"
-                    );
-
-                    if (option == 0) {
-                        boardLink.fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
-                    }
-                }
-            }
-        });
-
-        tablePanel.setPreferredSize(new Dimension(20*16,20*25));
-        tablePanel.add(table,BorderLayout.CENTER);
-        tablePanel.setBackground(Color.GRAY);
-        add(tablePanel);
-
-        playerScore.setBackground(Color.GRAY);
         setBackground(Color.GRAY);
-        add(stopButton, BorderLayout.NORTH);
-        add(playerScore,BorderLayout.EAST);
-
-        boardLink.initializeGameBoard();
-        repaintTable();
+        add(table);
     }
 
-    private class CustomCellRenderer extends DefaultTableCellRenderer {
+    class CustomCellRenderer extends DefaultTableCellRenderer {
         int colorValue;
 
         @Override
@@ -178,80 +119,6 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
         }
     }
 
-    @Override
-    public void changeGameState(GameStateEvent gameStateEvent) {
-
-        if (gameStateEvent.getGameState() == GameState.GAMEOVER) {
-            int score = boardLink.getPLayerScore();
-            if (gameOverDialog == null) {
-                gameOverDialog = new JDialog(
-                        SwingUtilities.getWindowAncestor(this),
-                        "Game Over",
-                        Dialog.ModalityType.APPLICATION_MODAL
-                );
-                gameOverDialog.setLayout(new BorderLayout());
-                gameOverDialog.setSize(200, 100);
-
-                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                int dialogWidth = gameOverDialog.getSize().width;
-                int dialogHeight = gameOverDialog.getSize().height;
-                int dialogX = (screenSize.width - dialogWidth) / 2;
-                int dialogY = (screenSize.height - dialogHeight) / 2;
-                gameOverDialog.setLocation(dialogX, dialogY);
-
-                JLabel scoreLabel = new JLabel("Score: " + score);
-                scoreLabel.setHorizontalAlignment(JLabel.CENTER);
-
-                JPanel namePanel = new JPanel(new BorderLayout());
-                JLabel nameLabel = new JLabel("Your Name:");
-
-                namePanel.add(nameLabel, BorderLayout.NORTH);
-
-                JTextField nameField = new JTextField();
-                nameField.setText(boardLink.getPlayerName());
-                namePanel.add(nameField, BorderLayout.CENTER);
-
-                JButton newGameButton = new JButton("New Game");
-                newGameButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String newName = nameField.getText();
-                        boardLink.setPlayerName(newName);
-                        boardLink.fireGameState(new GameStateEvent(this, GameState.NEWGAME));
-                        System.out.println("start new game");
-                        gameOverDialog.dispose();
-                    }
-                });
-
-                gameOverDialog.add(scoreLabel, BorderLayout.CENTER);
-                gameOverDialog.add(newGameButton, BorderLayout.SOUTH);
-                gameOverDialog.add(namePanel,BorderLayout.CENTER);
-            }
-
-            gameOverDialog.setVisible(true);
-        }
-
-    }
-
-    private void repaintTable() {
-        for (int row = 0; row < boardLink.getRows(); row++) {
-            for (int col = 0; col < boardLink.getCols(); col++) {
-                int segmentValue = boardLink.getCellValue(row, col);
-                if (segmentValue == 2 && !boardLink.isRecentSegment(row, col)) {
-                    segmentValue = 0;
-                }
-                model.setValueAt(segmentValue, row, col);
-            }
-        }
-        revalidate();
-        repaint();
-    }
-
-    @Override
-    public void refresh(RefreshEvent evt) {
-        playerScore.repaint();
-        repaintTable();
-    }
 
 
 }
