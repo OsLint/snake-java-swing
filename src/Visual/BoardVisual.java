@@ -192,6 +192,13 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
                 gameOverDialog.setLayout(new BorderLayout());
                 gameOverDialog.setSize(200, 100);
 
+                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                int dialogWidth = gameOverDialog.getSize().width;
+                int dialogHeight = gameOverDialog.getSize().height;
+                int dialogX = (screenSize.width - dialogWidth) / 2;
+                int dialogY = (screenSize.height - dialogHeight) / 2;
+                gameOverDialog.setLocation(dialogX, dialogY);
+
                 JLabel scoreLabel = new JLabel("Score: " + score);
                 scoreLabel.setHorizontalAlignment(JLabel.CENTER);
 
