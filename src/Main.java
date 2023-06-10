@@ -53,6 +53,7 @@ class Main extends JFrame {
         boardLogic.addGameStateListner(playerInput);
         boardLogic.addGameStateListner(boardVisual);
         playerInput.addChangeDirectionListner(boardLogic);
+
         getContentPane().add(boardVisual,BorderLayout.CENTER);
         getContentPane().add(scoreboardPanel,BorderLayout.EAST);
     }

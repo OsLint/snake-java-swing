@@ -18,6 +18,7 @@ import Logic.GameState;
 
 public class BoardVisual extends JPanel implements RefreshListner, GameStateListner {
     private final JPanel playerScore;
+    private final JPanel tablePanel;
     private JDialog gameOverDialog;
     private final BoardLink boardLink;
     private final DefaultTableModel model;
@@ -34,27 +35,17 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
     private final ImageIcon scissorsIcon;
 
     public BoardVisual(BoardLink boardLink) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        String northSnakeHeadImagePath = "snakeHeadNorth.png";
-        String westSnakeHeadImagePath = "snakeHeadWest.png";
-        String eastSnakeHeadImagePath = "snakeHeadEast.png";
-        String southSnakeHeadImagePath = "snakeHeadSouth.png";
-        String snakeBodyImagePath = "snakeBody.png";
-        String grassImagePath = "grass20x20.png";
-        String appleImagePath = "apple20x20.png";
-        String goldAppleImagePath = "goldapple20x20.png";
-        String blackAppleImagePath = "blackapple20x20.png";
-        String scissorsImagePath = "scissors20x20.png";
-        northSnakeHeadIcon = new ImageIcon(northSnakeHeadImagePath);
-        southSnakeHeadIcon = new ImageIcon(southSnakeHeadImagePath);
-        westSnakeHeadIcon = new ImageIcon(westSnakeHeadImagePath);
-        eastSnakeHeadIcon = new ImageIcon(eastSnakeHeadImagePath);
-        snakeBodyIcon = new ImageIcon(snakeBodyImagePath);
-        grassIcon = new ImageIcon(grassImagePath);
-        appleIcon = new ImageIcon(appleImagePath);
-        goldAppleIcon = new ImageIcon(goldAppleImagePath);
-        blackAppleIcon = new ImageIcon(blackAppleImagePath);
-        scissorsIcon = new ImageIcon(scissorsImagePath);
+        setLayout(new BorderLayout());
+        northSnakeHeadIcon = new ImageIcon("snakeHeadNorth.png");
+        southSnakeHeadIcon = new ImageIcon("snakeHeadSouth.png");
+        westSnakeHeadIcon = new ImageIcon("snakeHeadWest.png");
+        eastSnakeHeadIcon = new ImageIcon("snakeHeadEast.png");
+        snakeBodyIcon = new ImageIcon("snakeBody.png");
+        grassIcon = new ImageIcon("grass20x20.png");
+        appleIcon = new ImageIcon("apple20x20.png");
+        goldAppleIcon = new ImageIcon("goldapple20x20.png");
+        blackAppleIcon = new ImageIcon("blackapple20x20.png");
+        scissorsIcon = new ImageIcon("scissors20x20.png");
         this.boardLink = boardLink;
         model = new DefaultTableModel(boardLink.getRows(), boardLink.getCols());
         playerScore = new JPanel() {
@@ -63,17 +54,22 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
                 super.paintComponent(g);
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.PLAIN, 20));
-                g.drawString("Score: " + boardLink.getPLayerScore(), (this.getWidth() / 2) - 50, 21);
+                g.drawString("Score: " + boardLink.getPLayerScore(), (this.getWidth() / 2), 21);
             }
         };
         int cellSize = 20;
         JTable table = new JTable(model);
+        tablePanel = new JPanel();
+        tablePanel.setLayout(new FlowLayout());
         Border tableBorder = BorderFactory.createDashedBorder(Color.BLACK, 5, 2, 2, false);
         stopButton = new JButton("Pause the Game");
+
+
         table.setBorder(tableBorder);
         table.setRowHeight(cellSize);
         table.setTableHeader(null);
         table.setBorder(tableBorder);
+
         // Set column widths
         for (int i = 0; i < boardLink.getCols(); i++) {
             TableColumn column = table.getColumnModel().getColumn(i);
@@ -86,6 +82,7 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
         table.setDefaultEditor(Object.class, null);
         table.setFocusable(false);
         table.setDefaultRenderer(Object.class, new CustomCellRenderer());
+        table.setPreferredSize(new Dimension(20*16,20*25));
 
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -111,11 +108,16 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
             }
         });
 
-        playerScore.setBackground(Color.BLACK);
-        setBackground(Color.BLACK);
-        add(table, BorderLayout.CENTER);
-        add(playerScore, BorderLayout.SOUTH);
-        add(stopButton, BorderLayout.SOUTH);
+        tablePanel.setPreferredSize(new Dimension(20*16,20*25));
+        tablePanel.add(table,BorderLayout.CENTER);
+        tablePanel.setBackground(Color.GRAY);
+        add(tablePanel);
+
+        playerScore.setBackground(Color.GRAY);
+        setBackground(Color.GRAY);
+        add(stopButton, BorderLayout.NORTH);
+        add(playerScore,BorderLayout.EAST);
+
         boardLink.initializeGameBoard();
         repaintTable();
     }
@@ -216,6 +218,7 @@ public class BoardVisual extends JPanel implements RefreshListner, GameStateList
 
                 gameOverDialog.add(scoreLabel, BorderLayout.CENTER);
                 gameOverDialog.add(newGameButton, BorderLayout.SOUTH);
+                gameOverDialog.add(namePanel,BorderLayout.CENTER);
             }
 
             gameOverDialog.setVisible(true);
