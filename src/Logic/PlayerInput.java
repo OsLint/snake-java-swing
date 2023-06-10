@@ -24,6 +24,7 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
         Thread thread = new Thread(this);
         thread.start();
     }
+
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -36,11 +37,20 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
             currentDirection = Direction.LEFT;
         } else if (keyCode == KeyEvent.VK_RIGHT && currentDirection != Direction.LEFT) {
             currentDirection = Direction.RIGHT;
+        } else if (keyCode == KeyEvent.VK_SPACE) {
+            if (boardLink.getIspauseGame()) {
+                boardLink.fireGameState(new GameStateEvent(this, GameState.UNPAUSED));
+            } else {
+                boardLink.fireGameState(new GameStateEvent(this, GameState.PAUSED));
+            }
+
         }
     }
+
     @Override
     public void keyReleased(KeyEvent e) {
     }
+
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -48,7 +58,7 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
 
     @Override
     public void run() {
-        while (boardLink.getIsGameOngoing()){
+        while (boardLink.getIsGameOngoing()) {
             if (isGamePaused) {
                 try {
                     synchronized (this) {
@@ -58,8 +68,8 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
                     throw new RuntimeException(e);
                 }
             }
-            if(currentDirection != null){
-                ChangeDirectionEvent event = new ChangeDirectionEvent(this,this.currentDirection);
+            if (currentDirection != null) {
+                ChangeDirectionEvent event = new ChangeDirectionEvent(this, this.currentDirection);
                 fireChangeDirection(event);
             }
             try {
@@ -71,20 +81,23 @@ public class PlayerInput implements KeyListener, Runnable, GameStateListner {
             }
         }
     }
+
     private void fireChangeDirection(ChangeDirectionEvent event) {
         for (ChangeDirectionListner listener : directionListners) {
             listener.setDirection(event);
         }
-    }public void addChangeDirectionListner (ChangeDirectionListner listner) {
+    }
+
+    public void addChangeDirectionListner(ChangeDirectionListner listner) {
         this.directionListners.add(listner);
     }
 
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
         GameState gameState = gameStateEvent.getGameState();
-        if(gameState == GameState.PAUSED){
+        if (gameState == GameState.PAUSED) {
             isGamePaused = true;
-        }else if(gameState == GameState.UNPAUSED || gameState == GameState.NEWGAME){
+        } else if (gameState == GameState.UNPAUSED || gameState == GameState.NEWGAME) {
             isGamePaused = false;
             synchronized (this) {
                 notify();
