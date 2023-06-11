@@ -4,6 +4,7 @@ import Logic.BoardLogic;
 import Enums.GameState;
 import Logic.PlayerInput;
 import Visual.BoardPanel;
+import Visual.FileHandler;
 import Visual.ScoreboardPanel;
 
 import javax.swing.*;
@@ -33,21 +34,10 @@ class Main extends JFrame {
         setVisible(true);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
-
         boardLogic = new BoardLogic();
+        FileHandler fileHandler = new FileHandler(boardLogic);
         BoardPanel boardPanel = new BoardPanel(boardLogic);
         PlayerInput playerInput = new PlayerInput(boardLogic);
-        ScoreboardPanel scoreboardPanel = new ScoreboardPanel(boardLogic);
-        JPanel emptyPanel = new JPanel();
-
-        int screenWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-
-        emptyPanel.setPreferredSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
-        emptyPanel.setMaximumSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
-        emptyPanel.setBackground(Color.GRAY);
-        scoreboardPanel.setPreferredSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
-        scoreboardPanel.setMaximumSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
 
         playerName = showPlayerNameDialog();
         if (playerName == null) {
@@ -65,11 +55,25 @@ class Main extends JFrame {
                 Main.this.requestFocusInWindow();
             }
         });
+
+        ScoreboardPanel scoreboardPanel = new ScoreboardPanel(boardLogic,fileHandler);
+        JPanel emptyPanel = new JPanel();
+
+        int screenWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+
+        emptyPanel.setPreferredSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
+        emptyPanel.setMaximumSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
+        emptyPanel.setBackground(Color.GRAY);
+        scoreboardPanel.setPreferredSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
+        scoreboardPanel.setMaximumSize(new Dimension(screenWidth / 5, JFrame.MAXIMIZED_VERT));
+
+
         addKeyListener(playerInput);
         boardLogic.addRefreshListner(boardPanel);
         boardLogic.addRefreshListner(scoreboardPanel);
         boardLogic.addGameStateListner(playerInput);
         boardLogic.addGameStateListner(boardPanel);
+        boardLogic.addGameStateListner(fileHandler);
         playerInput.addChangeDirectionListner(boardLogic);
 
 

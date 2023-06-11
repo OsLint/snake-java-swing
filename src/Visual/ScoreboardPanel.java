@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import Events.RefreshEvent;
+import InterfaceLink.BoardLink;
+import InterfaceLink.FileHandler;
 import InterfaceLink.RefreshListner;
-import Logic.BoardLogic;
 import Logic.PlayerScore;
 
 /**
@@ -24,18 +25,21 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
     /**
      * Konstruktor klasy ScoreboardPanel.
      *
-     * @param boardLogic Obiekt typu BoardLogic, zawierający logikę gry i wyniki graczy.
+     * @param fileHandler Obiekt typu filehandler, zapisujący i odczytujący wyniki graczy.
      */
-    public ScoreboardPanel(BoardLogic boardLogic) {
+    public ScoreboardPanel(BoardLink boardLink, FileHandler fileHandler) {
         setLayout(new BorderLayout());
 
-        this.playerScores = boardLogic.getPlayerScores();
-
-        if (playerScores.isEmpty()) {
-            for (int i = 0; i < 10; i++) {
-                String playerName = "Player " + (i + 1);
-                int playerScore = (int) (Math.random() * 1000); // Generate a random score
-                playerScores.add(new PlayerScore(playerName, playerScore));
+        this.playerScores = boardLink.getPlayerScores();
+        if(playerScores == null || playerScores.isEmpty()) {
+            playerScores = fileHandler.getPlayerScores();
+            if (playerScores == null || playerScores.isEmpty()) {
+                playerScores = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {
+                    String playerName = "Player " + (i + 1);
+                    int playerScore = (int) (Math.random() * 1000); // Generacja losowych graczy
+                    playerScores.add(new PlayerScore(playerName, playerScore));
+                }
             }
         }
 
