@@ -4,7 +4,7 @@ import Logic.BoardLogic;
 import Enums.GameState;
 import Logic.PlayerInput;
 import Visual.BoardPanel;
-import Visual.FileHandler;
+import Logic.FileHandler;
 import Visual.ScoreboardPanel;
 
 import javax.swing.*;
