@@ -8,13 +8,15 @@ import Logic.PlayerScore;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
+
 public class FileHandler implements GameStateListner, InterfaceLink.FileHandler {
     private ArrayList<PlayerScore> playerScores;
     private ArrayList<PlayerScore> loadedPlayerScoresList;
     private final BoardLink boardLink;
+    private final String fileName = "scores.bin";
 
     public FileHandler(BoardLink boardLink) {
-
         this.boardLink = boardLink;
     }
 
@@ -23,19 +25,8 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
 
 
 
-        try  {
-            // Sprawdzenie istnienia pliku
-            File file = new File("playerScores.bin");
-            boolean fileExists = file.exists();
+        try  (FileOutputStream fos = new FileOutputStream(fileName,false)){
 
-            // Wyczyszczenie zawartości pliku, jeśli już istnieje
-            if (fileExists) {
-                RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                raf.setLength(0);
-                raf.close();
-            }
-
-            FileOutputStream fos = new FileOutputStream("playerScores.bin",false);
             // Ograniczenie listy do 10 największych wartości
             int numRecords = Math.min(playerScores.size(), 10);
 
@@ -68,9 +59,9 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
 
     public void loadPoints() {
         loadedPlayerScoresList = null;
-        try (FileInputStream fis = new FileInputStream("playerScores.bin")) {
+        try (FileInputStream fis = new FileInputStream(fileName)) {
             loadedPlayerScoresList = new ArrayList<>();
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < fis.read(); i++) {
                 // Odczyt pola LEN (ilości znaków opisujących nazwę gracza) jako 1-bajtowa liczba całkowita
                 int nameLength = fis.read();
                 if (nameLength < 0) {
@@ -101,13 +92,21 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
                     generateRandomScores(missingValues, maxPointsValue);
                 }
 
+                //Posortowanie i usunięcie zbędnych recordów
+                loadedPlayerScoresList.sort(Comparator.reverseOrder());
+                for (int j = 0; j < loadedPlayerScoresList.size(); j++) {
+                    if(i > 10) {
+                        loadedPlayerScoresList.remove(loadedPlayerScoresList.get(i));
+                    }
 
+                }
                 boardLink.setPlayerScores(loadedPlayerScoresList);
 
             }
             System.out.println("odczytaliśmy plik");
         } catch (IOException e) {
             System.out.println("nie odnaleźliśmy pliku");
+            e.printStackTrace();
             loadedPlayerScoresList = new ArrayList<>();
             generateRandomScores(10, 1000);
             boardLink.setPlayerScores(loadedPlayerScoresList);
@@ -163,9 +162,8 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
             writePoints();
         } else if (gameState == GameState.NEWGAME) {
             playerScores = boardLink.getPlayerScores();
-            if (playerScores == null || playerScores.isEmpty()) {
+            writePoints();
             loadPoints();
-           }
         }
     }
 
