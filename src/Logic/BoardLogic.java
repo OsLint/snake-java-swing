@@ -33,7 +33,7 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner {
     private boolean isGamePaused; // Flaga określająca, czy gra jest zatrzymana
     private Direction DIRECTION; // Obecny kierunek ruchu węża
     private final Map<Integer, int[]> segmentsMap; // Mapa segmentów węża
-    private final ArrayList<PlayerScore> playerScores = new ArrayList<>(); // Lista wyników graczy
+    private  ArrayList<PlayerScore> playerScores = new ArrayList<>(); // Lista wyników graczy
 
     private final ArrayList<RefreshListner> refreshListners = new ArrayList<>(); // Lista obiektów nasłuchujących
     // zdarzenia odświeżenia planszy
@@ -60,7 +60,6 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner {
                 return size() == snakeLenght + 1;
             }
         };
-
         //Event Listnery
         GameStateListner gameStateListner = gameStateEvent -> {
             GameState gameState = gameStateEvent.getGameState();
@@ -462,6 +461,16 @@ public class BoardLogic implements BoardLink, Runnable, ChangeDirectionListner {
     private void addGenerateFoodListner(GenereteFoodListner genereteFoodListner) {
         this.genereteFoodListners.add(genereteFoodListner);
     }
+
+    /**
+     * Metoda ustawia listę wyników graczy
+     * @param playerScores lista wyników graczy
+     */
+    @Override
+    public void setPlayerScores(ArrayList<PlayerScore> playerScores) {
+        this.playerScores = playerScores;
+    }
+
     /**
      * Metoda ustawiająca nazwę gracza.
      *

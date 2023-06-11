@@ -6,45 +6,56 @@ import InterfaceLink.BoardLink;
 import InterfaceLink.GameStateListner;
 import Logic.PlayerScore;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
-
 public class FileHandler implements GameStateListner, InterfaceLink.FileHandler {
     private ArrayList<PlayerScore> playerScores;
+    private ArrayList<PlayerScore> loadedPlayerScoresList;
     private final BoardLink boardLink;
-    public FileHandler(BoardLink boardLink){
+
+    public FileHandler(BoardLink boardLink) {
+
         this.boardLink = boardLink;
     }
 
-    public void writePoints(){
+    public void writePoints() {
         playerScores = boardLink.getPlayerScores();
-        playerScores.sort(Collections.reverseOrder());
-        try (FileOutputStream fos = new FileOutputStream("playerScores.bin")) {
+
+
+
+        try  {
+            // Sprawdzenie istnienia pliku
+            File file = new File("playerScores.bin");
+            boolean fileExists = file.exists();
+
+            // Wyczyszczenie zawartości pliku, jeśli już istnieje
+            if (fileExists) {
+                RandomAccessFile raf = new RandomAccessFile(file, "rw");
+                raf.setLength(0);
+                raf.close();
+            }
+
+            FileOutputStream fos = new FileOutputStream("playerScores.bin",false);
             // Ograniczenie listy do 10 największych wartości
             int numRecords = Math.min(playerScores.size(), 10);
 
-            // Zapis ilości rekordów jako 4-bajtowa liczba całkowita
-            fos.write(intToByteArray(numRecords));
 
-            for (PlayerScore playerPoints : playerScores) {
+            for (int i = 0; i < numRecords; i++) {
                 // Zapis pola LEN (ilości znaków opisujących nazwę gracza) jako 1-bajtowa liczba całkowita
-                fos.write((byte) playerPoints.playerName().length());
+                fos.write((byte) playerScores.get(i).playerName().length());
 
                 // Zapis sekwencji LEN bajtów zawierających znaki składające się na nazwę gracza
-                fos.write(playerPoints.playerName().getBytes());
+                fos.write(playerScores.get(i).playerName().getBytes());
 
                 // Zapis 4-bajtowej liczby całkowitej opisującej ilość zdobytych punktów
-                fos.write(intToByteArray(playerPoints.playerScore()));
-                System.out.println("zapisaliśmy plik");
+                fos.write(intToByteArray(playerScores.get(i).playerScore()));
             }
-        }catch (IOException e){
-            System.out.println("nie udało się odczytać pliku");
+            System.out.println("zapisaliśmy plik");
+        } catch (IOException e) {
+            System.out.println("nie udało się zapisać pliku");
         }
-
     }
+
     // Konwersja liczby całkowitej na tablicę 4 bajtów
     private static byte[] intToByteArray(int value) {
         byte[] byteArray = new byte[4];
@@ -55,19 +66,11 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
         return byteArray;
     }
 
-    public ArrayList<PlayerScore> loadPoints() {
-        ArrayList<PlayerScore> loadedPlayerScoresList = null;
+    public void loadPoints() {
+        loadedPlayerScoresList = null;
         try (FileInputStream fis = new FileInputStream("playerScores.bin")) {
             loadedPlayerScoresList = new ArrayList<>();
-
-            // Odczyt ilości rekordów jako 4-bajtowa liczba całkowita
-            byte[] numRecordsBytes = new byte[4];
-            if (fis.read(numRecordsBytes) != 4) {
-                throw new IOException("Failed to read the number of records.");
-            }
-            int numRecords = byteArrayToInt(numRecordsBytes);
-
-            for (int i = 0; i < numRecords; i++) {
+            for (int i = 0; i < 10; i++) {
                 // Odczyt pola LEN (ilości znaków opisujących nazwę gracza) jako 1-bajtowa liczba całkowita
                 int nameLength = fis.read();
                 if (nameLength < 0) {
@@ -90,13 +93,26 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
 
                 // Dodanie odczytanych danych do listy
                 loadedPlayerScoresList.add(new PlayerScore(name, points));
-                System.out.println("odczytaliśmy plik");
+
+                //Wygenerowanie brakujących wyników punktowych
+                if (loadedPlayerScoresList.size() < 10) {
+                    int missingValues = 10 - loadedPlayerScoresList.size();
+                    int maxPointsValue = findMinScore();
+                    generateRandomScores(missingValues, maxPointsValue);
+                }
+
+
+                boardLink.setPlayerScores(loadedPlayerScoresList);
+
             }
+            System.out.println("odczytaliśmy plik");
         } catch (IOException e) {
             System.out.println("nie odnaleźliśmy pliku");
+            loadedPlayerScoresList = new ArrayList<>();
+            generateRandomScores(10, 1000);
+            boardLink.setPlayerScores(loadedPlayerScoresList);
         }
 
-        return loadedPlayerScoresList;
     }
 
     // Konwersja tablicy 4 bajtów na liczbę całkowitą
@@ -112,14 +128,44 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
         return value;
     }
 
+    private void generateRandomScores(int amount, int maxPointsValue) {
+
+        for (int i = 0; i < amount; i++) {
+            String playerName = "Player " + (i + 1);
+            int playerScore = (int) (Math.random() * Math.min(maxPointsValue, 1000)); // Generacja losowych graczy
+            loadedPlayerScoresList.add(new PlayerScore(playerName, playerScore));
+        }
+    }
+
+    private int findMinScore() {
+        if (loadedPlayerScoresList.isEmpty()) {
+            throw new IllegalArgumentException("Lista wyników jest pusta.");
+        }
+
+        int minScore = loadedPlayerScoresList.get(0).playerScore();
+
+        for (int i = 1; i < loadedPlayerScoresList.size(); i++) {
+            int currentScore = loadedPlayerScoresList.get(i).playerScore();
+            if (currentScore < minScore) {
+                minScore = currentScore;
+            }
+        }
+
+        return minScore;
+
+    }
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
         GameState gameState = gameStateEvent.getGameState();
-        if(gameState == GameState.GAMEOVER){
+        if (gameState == GameState.GAMEOVER) {
             playerScores = boardLink.getPlayerScores();
+            loadedPlayerScoresList = playerScores;
             writePoints();
         } else if (gameState == GameState.NEWGAME) {
-            playerScores = loadPoints();
+            playerScores = boardLink.getPlayerScores();
+            if (playerScores == null || playerScores.isEmpty()) {
+            loadPoints();
+           }
         }
     }
 
@@ -127,5 +173,8 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
     public ArrayList<PlayerScore> getPlayerScores() {
         return playerScores;
     }
+
 }
+
+
 

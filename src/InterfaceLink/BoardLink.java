@@ -7,6 +7,7 @@ import Logic.PlayerScore;
 import java.util.ArrayList;
 
 public interface BoardLink {
+    void setPlayerScores(ArrayList<PlayerScore> playerScores);
     void setPlayerName (String playerName);
     void fireGameState(GameStateEvent gameStateEvent);
     void newGame();
@@ -26,6 +27,7 @@ public interface BoardLink {
     ArrayList<PlayerScore> getPlayerScores();
     String getPLayerName();
     String getPlayerName();
+
 
 
 }

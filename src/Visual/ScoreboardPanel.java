@@ -9,7 +9,6 @@ import java.util.Collections;
 
 import Events.RefreshEvent;
 import InterfaceLink.BoardLink;
-import InterfaceLink.FileHandler;
 import InterfaceLink.RefreshListner;
 import Logic.PlayerScore;
 
@@ -20,29 +19,19 @@ import Logic.PlayerScore;
 public class ScoreboardPanel extends JPanel implements RefreshListner {
 
     private final ScoreboardTableModel tableModel;
-    protected ArrayList<PlayerScore> playerScores;
+    private ArrayList<PlayerScore> playerScores;
+    private final BoardLink boardLink;
 
     /**
      * Konstruktor klasy ScoreboardPanel.
      *
-     * @param fileHandler Obiekt typu filehandler, zapisujący i odczytujący wyniki graczy.
+     * @param boardLink Obiekt typu boardlink, obsłuchujący logikę gry.
      */
-    public ScoreboardPanel(BoardLink boardLink, FileHandler fileHandler) {
-        setLayout(new BorderLayout());
-
+    public ScoreboardPanel(BoardLink boardLink) {
+        this.boardLink = boardLink;
         this.playerScores = boardLink.getPlayerScores();
-        if(playerScores == null || playerScores.isEmpty()) {
-            playerScores = fileHandler.getPlayerScores();
-            if (playerScores == null || playerScores.isEmpty()) {
-                playerScores = new ArrayList<>();
-                for (int i = 0; i < 10; i++) {
-                    String playerName = "Player " + (i + 1);
-                    int playerScore = (int) (Math.random() * 1000); // Generacja losowych graczy
-                    playerScores.add(new PlayerScore(playerName, playerScore));
-                }
-            }
-        }
 
+        setLayout(new BorderLayout());
         tableModel = new ScoreboardTableModel();
         JTable table = new JTable(tableModel);
 
@@ -66,6 +55,7 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
      */
     @Override
     public void refresh(RefreshEvent evt) {
+        playerScores = boardLink.getPlayerScores();
         playerScores.sort(Collections.reverseOrder());
         int count = Math.min(playerScores.size(), 10);
         for (int i = 0; i < count; i++) {
@@ -84,17 +74,20 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
 
         private final String[] columnNames = {"#", "Name", "Score"};
         private Object[][] data = new Object[10][3];
+
         /**
          * Konstruktor klasy ScoreboardTableModel.
          * Inicjalizuje dane tabeli na podstawie listy wyników graczy.
          */
         public ScoreboardTableModel() {
-            setData(playerScores, 10);
+            setData(playerScores, Math.min(10, playerScores.size()));
         }
+
         /**
-         Ustawia dane tabeli na podstawie listy wyników graczy.
-         @param playerScores Lista wyników graczy.
-         @param count Maksymalna liczba wierszy w tabeli.
+         * Ustawia dane tabeli na podstawie listy wyników graczy.
+         *
+         * @param playerScores Lista wyników graczy.
+         * @param count        Maksymalna liczba wierszy w tabeli.
          */
         public void setData(ArrayList<PlayerScore> playerScores, int count) {
             data = new Object[count][3];
@@ -105,10 +98,12 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
                 data[i][2] = playerScore.playerScore();
             }
         }
+
         @Override
         public int getRowCount() {
             return 10;
         }
+
         @Override
         public int getColumnCount() {
             return 3;
@@ -124,10 +119,12 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
             data[rowIndex][columnIndex] = aValue;
             fireTableCellUpdated(rowIndex, columnIndex);
         }
+
         @Override
         public String getColumnName(int column) {
             return columnNames[column];
         }
+
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;

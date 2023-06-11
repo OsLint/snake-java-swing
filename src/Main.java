@@ -25,7 +25,7 @@ class Main extends JFrame {
 
     /**
      * Konstruktor klasy Main.
-     * Inicjalizuje interfejs użytkownika, logikę gry i panele.
+     * Initialize interfejs użytkownika, logikę gry i panele.
      */
     public Main() {
         super("Snake");
@@ -38,6 +38,8 @@ class Main extends JFrame {
         FileHandler fileHandler = new FileHandler(boardLogic);
         BoardPanel boardPanel = new BoardPanel(boardLogic);
         PlayerInput playerInput = new PlayerInput(boardLogic);
+
+        fileHandler.loadPoints();
 
         playerName = showPlayerNameDialog();
         if (playerName == null) {
@@ -56,7 +58,7 @@ class Main extends JFrame {
             }
         });
 
-        ScoreboardPanel scoreboardPanel = new ScoreboardPanel(boardLogic,fileHandler);
+        ScoreboardPanel scoreboardPanel = new ScoreboardPanel(boardLogic);
         JPanel emptyPanel = new JPanel();
 
         int screenWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
@@ -83,7 +85,7 @@ class Main extends JFrame {
     }
 
     /**
-     * Metoda showPlayerNameDialog wyświetla dialog z prośbą o podanie nazwy gracza.
+     * Metoda showplayernamedialog wyświetla dialog z prośbą o podanie nazwy gracza.
      * @return Nazwa gracza.
      */
     private String showPlayerNameDialog() {
