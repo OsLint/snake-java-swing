@@ -7,6 +7,7 @@ import InterfaceLink.GameStateListner;
 
 import java.io.*;
 import java.util.ArrayList;
+
 public class FileHandler implements GameStateListner, InterfaceLink.FileHandler {
     private ArrayList<PlayerScore> playerScores;
     private ArrayList<PlayerScore> loadedPlayerScoresList;
@@ -20,37 +21,10 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
     public void writePoints() {
         playerScores = boardLink.getPlayerScores();
 
-
-
-        try (FileOutputStream fos = new FileOutputStream("playerScores.bin",false)) {
-            // Sprawdzenie istnienia pliku
-            /*File file = new File("playerScores.bin");
-            boolean fileExists = file.exists();*/
-
-            // Wyczyszczenie zawartości pliku, jeśli już istnieje
-           /* if (fileExists) {
-                if (file.delete()) {
-                    System.out.println("Previous file deleted successfully.");
-                } else {
-                    System.out.println("Failed to delete previous file.");
-                }
-
-                if (file.createNewFile()) {
-                    System.out.println("New file created successfully.");
-                } else {
-                    System.out.println("Failed to create new file.");
-                }
-            }*/
-
-            for (PlayerScore playerscore:
-                 playerScores) {
-                System.out.println("Zapisujemy: " + playerscore.toString());
-            }
-
+        try (FileOutputStream fos = new FileOutputStream("playerScores.bin", false)) {
 
             // Ograniczenie listy do 10 największych wartości
             int numRecords = Math.min(playerScores.size(), 10);
-
 
             for (int i = 0; i < numRecords; i++) {
                 // Zapis pola LEN (ilości znaków opisujących nazwę gracza) jako 1-bajtowa liczba całkowita
@@ -104,14 +78,14 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
                 int points = byteArrayToInt(pointsBytes);
 
                 // Dodanie odczytanych danych do listy
-                PlayerScore newPlayerScore = new PlayerScore(name,points);
-                System.out.println("Odczytujemy: " + newPlayerScore);
+                PlayerScore newPlayerScore = new PlayerScore(name, points);
                 loadedPlayerScoresList.add(newPlayerScore);
 
                 //Wygenerowanie brakujących wyników punktowych
                 if (loadedPlayerScoresList.size() < 10) {
                     int missingValues = 10 - loadedPlayerScoresList.size();
                     int maxPointsValue = findMinScore();
+
                     generateRandomScores(missingValues, maxPointsValue);
                 }
 
@@ -123,7 +97,7 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
         } catch (IOException e) {
             System.out.println("nie odnaleźliśmy pliku");
             loadedPlayerScoresList = new ArrayList<>();
-            generateRandomScores(10, 1000);
+            generateRandomScores(10, 500);
             boardLink.setPlayerScores(loadedPlayerScoresList);
         }
 
@@ -168,6 +142,7 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
         return minScore;
 
     }
+
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
         GameState gameState = gameStateEvent.getGameState();
