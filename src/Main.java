@@ -10,10 +10,7 @@ import Visual.ScoreboardPanel;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Klasa Main reprezentuje główną klasę programu.
- * Uruchamia grę Snake.
- */
+
 class Main extends JFrame {
 
     public static void main(String[] args) {
@@ -23,10 +20,7 @@ class Main extends JFrame {
     private final BoardLogic boardLogic;
     private String playerName;
 
-    /**
-     * Konstruktor klasy Main.
-     * Initialize interfejs użytkownika, logikę gry i panele.
-     */
+
     public Main() {
         super("Snake");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -43,7 +37,7 @@ class Main extends JFrame {
 
         playerName = showPlayerNameDialog();
         if (playerName == null) {
-            // Gracz wybrał opcję wyjścia
+
             System.exit(0);
         }
         boardLogic.setPlayerName(playerName);
@@ -84,10 +78,7 @@ class Main extends JFrame {
         getContentPane().add(emptyPanel, BorderLayout.WEST);
     }
 
-    /**
-     * Metoda showplayernamedialog wyświetla dialog z prośbą o podanie nazwy gracza.
-     * @return Nazwa gracza.
-     */
+
     private String showPlayerNameDialog() {
         JTextField playerNameField = new JTextField();
         Object[] message = {"Podaj nazwę gracza:", playerNameField};

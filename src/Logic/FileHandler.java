@@ -23,17 +23,17 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
 
         try (FileOutputStream fos = new FileOutputStream("playerScores.bin", false)) {
 
-            // Ograniczenie listy do 10 największych wartości
+
             int numRecords = Math.min(playerScores.size(), 10);
 
             for (int i = 0; i < numRecords; i++) {
-                // Zapis pola LEN (ilości znaków opisujących nazwę gracza) jako 1-bajtowa liczba całkowita
+
                 fos.write((byte) playerScores.get(i).playerName().length());
 
-                // Zapis sekwencji LEN bajtów zawierających znaki składające się na nazwę gracza
+
                 fos.write(playerScores.get(i).playerName().getBytes());
 
-                // Zapis 4-bajtowej liczby całkowitej opisującej ilość zdobytych punktów
+
                 fos.write(intToByteArray(playerScores.get(i).playerScore()));
             }
             System.out.println("zapisaliśmy plik");
@@ -42,7 +42,7 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
         }
     }
 
-    // Konwersja liczby całkowitej na tablicę 4 bajtów
+
     private static byte[] intToByteArray(int value) {
         byte[] byteArray = new byte[4];
         byteArray[0] = (byte) (value >> 24);
@@ -57,31 +57,29 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
         try (FileInputStream fis = new FileInputStream("playerScores.bin")) {
             loadedPlayerScoresList = new ArrayList<>();
             for (int i = 0; i < fis.available(); i++) {
-                // Odczyt pola LEN (ilości znaków opisujących nazwę gracza) jako 1-bajtowa liczba całkowita
+
                 int nameLength = fis.read();
                 if (nameLength < 0) {
                     throw new IOException("Failed to read the name length.");
                 }
 
-                // Odczyt sekwencji LEN bajtów zawierających znaki składające się na nazwę gracza
                 byte[] nameBytes = new byte[nameLength];
                 if (fis.read(nameBytes) != nameLength) {
                     throw new IOException("Failed to read the player name.");
                 }
                 String name = new String(nameBytes);
 
-                // Odczyt 4-bajtowej liczby całkowitej opisującej ilość zdobytych punktów
+
                 byte[] pointsBytes = new byte[4];
                 if (fis.read(pointsBytes) != 4) {
                     throw new IOException("Failed to read the player score.");
                 }
                 int points = byteArrayToInt(pointsBytes);
 
-                // Dodanie odczytanych danych do listy
                 PlayerScore newPlayerScore = new PlayerScore(name, points);
                 loadedPlayerScoresList.add(newPlayerScore);
 
-                //Wygenerowanie brakujących wyników punktowych
+
                 if (loadedPlayerScoresList.size() < 10) {
                     int missingValues = 10 - loadedPlayerScoresList.size();
                     int maxPointsValue = findMinScore();
@@ -103,7 +101,7 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
 
     }
 
-    // Konwersja tablicy 4 bajtów na liczbę całkowitą
+
     private static int byteArrayToInt(byte[] byteArray) {
         int value = 0;
         value |= byteArray[0] & 0xFF;
@@ -120,7 +118,7 @@ public class FileHandler implements GameStateListner, InterfaceLink.FileHandler 
 
         for (int i = 0; i < amount; i++) {
             String playerName = "Player " + (i + 1);
-            int playerScore = (int) (Math.random() * Math.min(maxPointsValue, 1000)); // Generacja losowych graczy
+            int playerScore = (int) (Math.random() * Math.min(maxPointsValue, 1000));
             loadedPlayerScoresList.add(new PlayerScore(playerName, playerScore));
         }
     }

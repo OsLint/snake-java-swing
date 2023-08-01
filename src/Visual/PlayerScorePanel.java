@@ -4,24 +4,15 @@ import InterfaceLink.BoardLink;
 
 import javax.swing.*;
 import java.awt.*;
-/**
- Klasa PlayerScorePanel reprezentuje panel wyświetlający wynik gracza.
- */
+
 public class PlayerScorePanel extends JPanel {
     private final BoardLink boardLink;
-    /**
-     Konstruktor klasy PlayerScorePanel.
-     @param boardLink Obiekt typu BoardLink, który umożliwia połączenie z logiką gry.
-     */
+
     public PlayerScorePanel (BoardLink boardLink){
         this.boardLink = boardLink;
         setBackground(Color.GRAY);
     }
-    /**
-     Metoda paintComponent wywoływana automatycznie przy potrzebie ponownego rysowania panelu.
-     Rysuje tekst z aktualnym wynikiem gracza na panelu.
-     @param g Obiekt typu Graphics, który umożliwia rysowanie na panelu.
-     */
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

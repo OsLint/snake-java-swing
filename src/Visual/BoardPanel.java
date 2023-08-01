@@ -15,12 +15,7 @@ import InterfaceLink.GameStateListner;
 import InterfaceLink.RefreshListner;
 import Enums.GameState;
 
-/**
 
- Klasa BoardPanel reprezentuje panel planszy gry.
- Panel ten dziedziczy po klasie JPanel i implementuje interfejsy RefreshListner oraz GameStateListner.
- Służy do wyświetlania planszy gry oraz aktualizacji jej stanu.
- */
 
 public class BoardPanel extends JPanel implements RefreshListner, GameStateListner {
     private JDialog gameOverDialog;
@@ -29,12 +24,9 @@ public class BoardPanel extends JPanel implements RefreshListner, GameStateListn
     private int playerScoreValue;
     private final JLabel scoreLabel;
     private final PlayerScorePanel playerScore;
-    /**
-     Konstruktor klasy BoardPanel.
-     @param boardLink Obiekt typu BoardLink, który umożliwia połączenie z logiką gry.
-     */
+
     public BoardPanel(BoardLink boardLink) {
-        //Inicjalizacja komponentów
+
         this.boardLink = boardLink;
         playerScoreValue = boardLink.getPLayerScore();
         scoreLabel = new JLabel("Score: " + playerScoreValue);
@@ -74,12 +66,7 @@ public class BoardPanel extends JPanel implements RefreshListner, GameStateListn
         repaintTable();
         add(Box.createVerticalGlue());
     }
-    /**
-     Metoda changeGameState obsługuje zmianę stanu gry.
-     Wywoływana, gdy następuje zdarzenie GameStateEvent.
-     Jeśli stan gry jest GAMEOVER, tworzy dialog z informacją o końcu gry oraz opcją rozpoczęcia nowej gry.
-     @param gameStateEvent Obiekt GameStateEvent reprezentujący zdarzenie zmiany stanu gry.
-     */
+
     @Override
     public void changeGameState(GameStateEvent gameStateEvent) {
 
@@ -137,11 +124,7 @@ public class BoardPanel extends JPanel implements RefreshListner, GameStateListn
         }
 
     }
-    /**
-     Metoda repaintTable odświeża tabelę planszy gry.
-     Aktualizuje wartości komórek tabeli na podstawie stanu planszy z obiektu boardLink.
-     Wywoływana po zmianie stanu planszy.
-     */
+
     private void repaintTable() {
         for (int row = 0; row < boardLink.getRows(); row++) {
             for (int col = 0; col < boardLink.getCols(); col++) {
@@ -155,12 +138,7 @@ public class BoardPanel extends JPanel implements RefreshListner, GameStateListn
         revalidate();
         repaint();
     }
-    /**
-     Metoda refresh odświeża panel z wynikiem gracza.
-     Aktualizuje wyświetlane wartości punktacji oraz odświeża tabelę planszy.
-     Wywoływana po zdarzeniu RefreshEvent.
-     @param evt Obiekt RefreshEvent reprezentujący zdarzenie odświeżenia.
-     */
+
     @Override
     public void refresh(RefreshEvent evt) {
         playerScore.repaint();

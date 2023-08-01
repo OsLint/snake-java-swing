@@ -12,21 +12,14 @@ import InterfaceLink.BoardLink;
 import InterfaceLink.RefreshListner;
 import Logic.PlayerScore;
 
-/**
- * Klasa ScoreboardPanel reprezentuje panel wyników graczy.
- * Wyświetla tabelę z najlepszymi wynikami graczy.
- */
+
 public class ScoreboardPanel extends JPanel implements RefreshListner {
 
     private final ScoreboardTableModel tableModel;
     private ArrayList<PlayerScore> playerScores;
     private final BoardLink boardLink;
 
-    /**
-     * Konstruktor klasy ScoreboardPanel.
-     *
-     * @param boardLink Obiekt typu boardlink, obsłuchujący logikę gry.
-     */
+
     public ScoreboardPanel(BoardLink boardLink) {
         this.boardLink = boardLink;
         this.playerScores = boardLink.getPlayerScores();
@@ -47,12 +40,7 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    /**
-     * Metoda refresh wywoływana w momencie odświeżenia danych panelu.
-     * Sortuje wyniki graczy malejąco i wyświetla maksymalnie 10 najlepszych wyników w tabeli.
-     *
-     * @param evt Obiekt typu RefreshEvent, informujący o zdarzeniu odświeżenia.
-     */
+
     @Override
     public void refresh(RefreshEvent evt) {
         playerScores = boardLink.getPlayerScores();
@@ -66,29 +54,18 @@ public class ScoreboardPanel extends JPanel implements RefreshListner {
         }
     }
 
-    /**
-     * Wewnętrzna klasa ScoreboardTableModel rozszerzająca DefaultTableModel.
-     * Reprezentuje model tabeli wyników.
-     */
+
     private class ScoreboardTableModel extends DefaultTableModel {
 
         private final String[] columnNames = {"#", "Name", "Score"};
         private Object[][] data = new Object[10][3];
 
-        /**
-         * Konstruktor klasy ScoreboardTableModel.
-         * Inicjalizuje dane tabeli na podstawie listy wyników graczy.
-         */
+
         public ScoreboardTableModel() {
             setData(playerScores, Math.min(10, playerScores.size()));
         }
 
-        /**
-         * Ustawia dane tabeli na podstawie listy wyników graczy.
-         *
-         * @param playerScores Lista wyników graczy.
-         * @param count        Maksymalna liczba wierszy w tabeli.
-         */
+
         public void setData(ArrayList<PlayerScore> playerScores, int count) {
             data = new Object[count][3];
             for (int i = 0; i < count; i++) {
